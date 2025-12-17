@@ -47,7 +47,7 @@ function showScreen(id) {
 function startTimer() {
     timeLeft = 15;
     if (config.mode === 'SURVIVAL') timeLeft = 10;
-    if (config.mode === 'MARATHON') timeLeft = 20;
+    if (config.mode === 'MARATHON' || config.mode === 'ORTHOGRAPH') timeLeft = 20;
     
     const bar = document.getElementById('timer-bar-fill');
     const sprite = document.getElementById('pokemon-sprite');

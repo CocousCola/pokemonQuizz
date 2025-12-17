@@ -159,11 +159,14 @@ function sendNextQuestion(code) {
             totalQuestions: game.questions.length
         });
 
-        // Set server-side timeout
+        // Set server-side timeout based on game mode
         if (game.timer) clearTimeout(game.timer);
+        
+        const duration = (game.timeLimit || 15) * 1000 + 500; // Time limit + 500ms buffer
+        
         game.timer = setTimeout(() => {
             revealResults(code);
-        }, 15500); // 15s + buffer
+        }, duration);
     }
 }
 

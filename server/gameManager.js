@@ -81,8 +81,22 @@ class GameManager {
         let count = game.settings.limit || 12;
         if (game.settings.mode === 'MARATHON') count = 151;
         
+        // Handle Marathon Mode or Survival
+        let count = game.settings.limit || 12;
+        let timeLimit = 15; // Default Classic
+
+        if (game.settings.mode === 'MARATHON') {
+            count = 151;
+            timeLimit = 20;
+        } else if (game.settings.mode === 'SURVIVAL') {
+            timeLimit = 10;
+        } else if (game.settings.mode === 'ORTHOGRAPH') {
+            timeLimit = 20; // More time for typing
+        }
+        
         game.questions = await pokemonService.generateQuestions(count, game.settings.mode);
-        game.currentQuestionIndex = -1; // Start at -1 so nextQuestion() increments to 0
+        game.currentQuestionIndex = -1;
+        game.timeLimit = timeLimit; // Store for server.js
         
         return game;
     }
