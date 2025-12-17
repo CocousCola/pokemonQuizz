@@ -6,6 +6,7 @@ let currentQuestion = null;
 let timerInterval = null;
 let timeLeft = 15;
 let nextQuestionTimeout = null;
+let allPlayers = []; // Store players for pressure display
 let config = {
     mode: 'CLASSIC',
     limit: 12
@@ -23,6 +24,9 @@ const popups = {
     result: document.getElementById('result-popup')
 };
 
+// Safety: Ensure popup is hidden on load
+popups.result.classList.add('hidden');
+
 // SVG Icons for Options
 const shapeIcons = [
     `<svg viewBox="0 0 60 60" class="option-icon"><circle cx="30" cy="30" r="25" fill="white"/></svg>`,
@@ -33,7 +37,6 @@ const shapeIcons = [
 
 // --- Helpers ---
 
-// Helper pour les images HD
 function getAvatarUrl(dexId) {
     return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${dexId}.png`;
 }
@@ -77,13 +80,11 @@ function stopTimer() {
 }
 
 function updateLeaderboard(players) {
-    console.log("Updating Leaderboard with", players.length, "players");
+    allPlayers = players; // Update global list
     const list = document.getElementById('leaderboard-list');
     
     if (list) {
         list.innerHTML = '';
-        
-        // Find max score for bar calculation
         const maxScore = Math.max(...players.map(p => p.score), 1);
 
         players.forEach((p, i) => {
@@ -91,7 +92,7 @@ function updateLeaderboard(players) {
             div.className = 'leaderboard-item slide-in';
             div.style.animationDelay = `${i * 0.1}s`;
             const imgUrl = getAvatarUrl(p.trainerSpriteId);
-            const barWidth = Math.max((p.score / maxScore) * 100, 5); // Min 5% width
+            const barWidth = Math.max((p.score / maxScore) * 100, 5); 
             
             div.innerHTML = `
                 <img src="${imgUrl}" class="leaderboard-avatar">
@@ -108,9 +109,27 @@ function updateLeaderboard(players) {
     }
 }
 
+function updateActivePlayers() {
+    const container = document.getElementById('active-players');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    allPlayers.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'mini-player-card';
+        div.setAttribute('data-id', p.id);
+        const imgUrl = getAvatarUrl(p.trainerSpriteId);
+        
+        div.innerHTML = `
+            <img src="${imgUrl}">
+            <div class="status-indicator"></div>
+        `;
+        container.appendChild(div);
+    });
+}
+
 // --- Socket Events ---
 
-// Socket Connection
 socket.on('connect', () => {
     console.log('Connecté au serveur');
 });
@@ -165,9 +184,7 @@ window.updateRangeVal = function(val) {
     document.getElementById('questions-val').textContent = `${val} QUESTIONS`;
 };
 
-// Event Listeners
 document.addEventListener('DOMContentLoaded', () => {
-    // Hide popup on load
     if(popups.result) popups.result.classList.add('hidden');
 
     document.getElementById('create-lobby-btn').addEventListener('click', () => {
@@ -187,6 +204,7 @@ socket.on('game-created', (data) => {
 });
 
 socket.on('lobby-update', (data) => {
+    allPlayers = data.players; // Store players
     const list = document.getElementById('players-list');
     const countEl = document.getElementById('player-count');
     const startBtn = document.getElementById('start-game-btn');
@@ -217,15 +235,14 @@ socket.on('game-started', (data) => {
 });
 
 socket.on('question', (data) => {
-    console.log("New Question Received:", data);
-    
-    // Switch to question screen immediately
     showScreen('question');
-    
     popups.result.classList.add('hidden');
     
     currentQuestion = data.question;
     document.getElementById('current-q').textContent = data.questionNumber;
+    
+    // Reset Active Players Visuals
+    updateActivePlayers();
     
     startTimer();
     
@@ -269,8 +286,17 @@ socket.on('question', (data) => {
     }
 });
 
+socket.on('player-answered', (data) => {
+    const playerCard = document.querySelector(`.mini-player-card[data-id="${data.playerId}"]`);
+    if (playerCard) {
+        playerCard.classList.add('answered');
+        const img = playerCard.querySelector('img');
+        if(img) img.style.opacity = '0.5'; // Visual feedback
+        // Optional: Add a checkmark overlay
+    }
+});
+
 socket.on('question-results', (data) => {
-    console.log("Results Received:", data);
     stopTimer();
     
     const popup = popups.result;
@@ -289,7 +315,6 @@ socket.on('question-results', (data) => {
     const timeEl = document.getElementById('round-time');
     const winnerBox = document.querySelector('.winner-box');
     
-    // Reset classes
     winnerBox.className = 'winner-box';
     
     if (data.fastest) {
@@ -306,13 +331,11 @@ socket.on('question-results', (data) => {
     popup.classList.remove('hidden');
     
     setTimeout(() => {
-        console.log("Requesting Leaderboard...");
         socket.emit('request-leaderboard', { code: gameCode });
     }, 6000);
 });
 
 socket.on('leaderboard', (data) => {
-    console.log("Leaderboard Received");
     popups.result.classList.add('hidden');
     
     if (!screens.gameOver.classList.contains('hidden')) return;
@@ -323,7 +346,6 @@ socket.on('leaderboard', (data) => {
     if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
     
     nextQuestionTimeout = setTimeout(() => {
-        console.log("Triggering Next Question");
         socket.emit('next-question', { code: gameCode });
     }, 5000);
 });

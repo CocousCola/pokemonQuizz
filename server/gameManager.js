@@ -119,8 +119,6 @@ class GameManager {
         
         if (isCorrect) {
             // Points calculation: 1000 base + (500 - (10 * sec))
-            // Text mode might have different scoring? Let's keep it consistent for now or bonus for perfect spelling?
-            // Prompt says: Perfect=1000, 1 error=800... but let's stick to speed bonus for now
             const bonus = Math.max(0, 500 - Math.floor(timeTaken * 33.3));
             const points = 1000 + bonus;
             
@@ -134,7 +132,7 @@ class GameManager {
 
         return {
             player,
-            allAnswered: Array.from(game.players.values()).every(p => p.hasAnswered)
+            allAnswered: false // FORCE WAIT FOR TIMER (Suspense !)
         };
     }
 
