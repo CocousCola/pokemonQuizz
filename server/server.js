@@ -113,56 +113,14 @@ io.on('connection', (socket) => {
         sendNextQuestion(code);
     });
 
+    socket.on('request-leaderboard', ({ code }) => {
+        const leaderboard = gameManager.getLeaderboard(code);
+        io.to(code).emit('leaderboard', { players: leaderboard });
+    });
+
     socket.on('disconnect', () => {
         const result = gameManager.removePlayer(socket.id);
-        if (result) {
-            const { code, player, hostLeft } = result;
-            if (hostLeft) {
-                io.to(code).emit('error', { message: "L'hôte a quitté la partie." });
-            } else if (player) {
-                io.to(code).emit('player-left', { 
-                    playerId: player.id, 
-                    pseudo: player.pseudo 
-                });
-                
-                const game = gameManager.getGame(code);
-                if (game) {
-                    io.to(code).emit('lobby-update', { 
-                        players: Array.from(game.players.values()) 
-                    });
-                }
-            }
-        }
-    });
-});
-
-function sendNextQuestion(code) {
-    const game = gameManager.getGame(code);
-    if (!game) return;
-
-    const result = gameManager.nextQuestion(code);
-    if (result.status === 'finished') {
-        const leaderboard = gameManager.getLeaderboard(code);
-        io.to(code).emit('game-over', { 
-            finalLeaderboard: leaderboard,
-            winner: leaderboard[0]
-        });
-    } else {
-        game.questionStartTime = Date.now();
-        io.to(code).emit('question', {
-            question: result.question,
-            questionNumber: result.index + 1,
-            totalQuestions: game.questions.length
-        });
-
-        // Set server-side timeout
-        if (game.timer) clearTimeout(game.timer);
-        game.timer = setTimeout(() => {
-            revealResults(code);
-        }, 15500); // 15s + buffer
-    }
-}
-
+// ...
 function revealResults(code) {
     const game = gameManager.getGame(code);
     if (!game) return;
@@ -191,9 +149,7 @@ function revealResults(code) {
         fastest: fastest ? { pseudo: fastest.pseudo, time: fastest.lastAnswerTime.toFixed(2) } : null
     });
 
-    // Send updated leaderboard
-    const leaderboard = gameManager.getLeaderboard(code);
-    io.to(code).emit('leaderboard', { players: leaderboard });
+    // Removed automatic leaderboard emission to let client control flow via request-leaderboard
 }
 
 // Start Server
