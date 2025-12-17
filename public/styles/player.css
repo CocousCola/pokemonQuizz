@@ -1,15 +1,43 @@
-.screen {
+body {
+    background-color: #222; /* Fond sombre pour faire ressortir l'app sur PC */
+}
+
+#app {
+    max-width: 500px; /* Largeur max type "Tablette/Gros téléphone" */
+    margin: 0 auto;   /* Centrer sur la page */
     height: 100vh;
+    background-color: var(--poke-red);
+    box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Ombre portée jolie */
+    position: relative;
+    overflow: hidden;
+}
+
+.screen {
+    height: 100%;
     display: flex;
     flex-direction: column;
     padding: 20px;
-    background-color: var(--poke-red); /* Style Pokédex */
+    background-color: var(--poke-red);
     color: white;
+    overflow-y: auto; /* Permet de scroller si l'écran est trop petit ! */
+}
+
+/* Scrollbar personnalisée stylée */
+.screen::-webkit-scrollbar {
+    width: 8px;
+}
+.screen::-webkit-scrollbar-track {
+    background: var(--poke-red); 
+}
+.screen::-webkit-scrollbar-thumb {
+    background: var(--poke-yellow); 
+    border-radius: 4px;
 }
 
 header {
     text-align: center;
     margin-bottom: 20px;
+    flex-shrink: 0; /* Empêche le header de s'écraser */
 }
 
 .trainer-selection {
@@ -19,6 +47,7 @@ header {
     border: 4px solid black;
     margin-bottom: 20px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .trainer-grid {
