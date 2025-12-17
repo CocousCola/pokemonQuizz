@@ -28,7 +28,9 @@ class GameManager {
         return game;
     }
 
-    // ... (getGame remains same)
+    getGame(code) {
+        return this.games.get(code);
+    }
 
     joinGame(code, socketId, pseudo, trainer) {
         const game = this.games.get(code);

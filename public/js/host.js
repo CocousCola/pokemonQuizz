@@ -52,12 +52,35 @@ socket.on('server-info', (data) => {
 // UI Handlers
 window.selectMode = function(mode) {
     config.mode = mode;
+    
+    // Update visual selection
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
     const btn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
     if(btn) btn.classList.add('selected');
+    
+    // Handle Marathon Mode (Fixed 151 questions)
+    const questionsConfig = document.getElementById('questions-config');
+    const questionsRange = document.getElementById('questions-range');
+    const questionsVal = document.getElementById('questions-val');
+    
+    if (mode === 'MARATHON') {
+        questionsConfig.style.opacity = '0.5';
+        questionsConfig.style.pointerEvents = 'none';
+        questionsRange.disabled = true;
+        config.limit = 151;
+        questionsVal.textContent = "151 POKÉMON (FIXE)";
+    } else {
+        questionsConfig.style.opacity = '1';
+        questionsConfig.style.pointerEvents = 'auto';
+        questionsRange.disabled = false;
+        // Restore slider value
+        config.limit = parseInt(questionsRange.value);
+        questionsVal.textContent = `${config.limit} QUESTIONS`;
+    }
 };
 
 window.updateRangeVal = function(val) {
+    if (config.mode === 'MARATHON') return; // Prevent changes
     config.limit = parseInt(val);
     document.getElementById('questions-val').textContent = `${val} QUESTIONS`;
 };
