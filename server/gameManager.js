@@ -82,7 +82,7 @@ class GameManager {
         if (game.settings.mode === 'MARATHON') count = 151;
         
         game.questions = await pokemonService.generateQuestions(count, game.settings.mode);
-        game.currentQuestionIndex = 0;
+        game.currentQuestionIndex = -1; // Start at -1 so nextQuestion() increments to 0
         
         return game;
     }

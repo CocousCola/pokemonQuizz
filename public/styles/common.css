@@ -1,19 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
 :root {
-    /* Palette GameBoy */
-    --gb-darkest: #0f380f;
+    /* Palette Améliorée */
+    --gb-darkest: #202020;
     --gb-dark: #306230;
     --gb-light: #8bac0f;
-    --gb-lightest: #9bbc0f;
+    --gb-lightest: #f0f0f0; /* Blanc cassé plus agréable */
     
-    /* Alias pour compatibilité */
-    --poke-black: var(--gb-darkest);
-    --poke-white: var(--gb-lightest);
-    --poke-red: var(--gb-dark); /* On remplace le rouge par le vert foncé pour rester dans le thème */
-    --poke-blue: var(--gb-dark);
-    --poke-yellow: var(--gb-light);
-    --poke-green: var(--gb-light);
+    --poke-red: #ff3a3a;
+    --poke-blue: #3a86ff;
+    --poke-yellow: #ffbd00;
     
     --font-retro: 'Press Start 2P', cursive;
 }
@@ -26,13 +22,16 @@
 
 body {
     font-family: var(--font-retro);
-    background-color: var(--gb-lightest);
+    background-color: #f8f8f8;
     color: var(--gb-darkest);
     overflow: hidden;
     height: 100vh;
-    /* Scanline effect optional but cool */
-    background-image: linear-gradient(rgba(15, 56, 15, 0.1) 1px, transparent 1px);
-    background-size: 100% 4px;
+    /* Pattern Pokéball Subtil */
+    background-image: 
+        radial-gradient(#e0e0e0 15%, transparent 16%),
+        radial-gradient(#e0e0e0 15%, transparent 16%);
+    background-size: 30px 30px;
+    background-position: 0 0, 15px 15px;
 }
 
 h1, h2, h3, h4, p, span, div {
@@ -43,20 +42,21 @@ h1, h2, h3, h4, p, span, div {
 
 /* Retro Box Style */
 .retro-box {
-    background-color: var(--gb-lightest);
+    background-color: white;
     border: 4px solid var(--gb-darkest);
-    box-shadow: 4px 4px 0px var(--gb-dark);
+    box-shadow: 6px 6px 0px rgba(0,0,0,0.2);
     padding: 20px;
     position: relative;
+    border-radius: 4px;
 }
 
 /* Retro Button */
 .btn {
     font-family: var(--font-retro);
     padding: 15px 20px;
-    background-color: var(--gb-lightest);
+    background-color: var(--poke-blue);
     border: 4px solid var(--gb-darkest);
-    color: var(--gb-darkest);
+    color: white;
     cursor: pointer;
     box-shadow: 4px 4px 0px var(--gb-darkest);
     transition: all 0.1s;
@@ -66,9 +66,9 @@ h1, h2, h3, h4, p, span, div {
 }
 
 .btn:hover {
-    background-color: var(--gb-light);
     transform: translate(2px, 2px);
     box-shadow: 2px 2px 0px var(--gb-darkest);
+    filter: brightness(1.1);
 }
 
 .btn:active {
@@ -76,22 +76,14 @@ h1, h2, h3, h4, p, span, div {
     box-shadow: none;
 }
 
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: translate(4px, 4px);
-}
-
 /* Input Fields */
 input[type="text"], input[type="number"] {
-    background-color: var(--gb-lightest);
+    background-color: white;
     border: 4px solid var(--gb-darkest);
     padding: 10px;
     font-family: var(--font-retro);
     color: var(--gb-darkest);
     outline: none;
-    box-shadow: inset 4px 4px 0px rgba(0,0,0,0.1);
 }
 
 /* Animations */
@@ -108,7 +100,6 @@ input[type="text"], input[type="number"] {
     display: none !important;
 }
 
-/* Helper for grid centering */
 .flex-center {
     display: flex;
     justify-content: center;

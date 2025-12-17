@@ -266,17 +266,33 @@ function showScreen(id) {
 }
 
 function startTimer() {
-    timeLeft = 15; // Should be dynamic based on mode?
-    if (config.mode === 'SURVIVAL') timeLeft = 10; // Faster
+    timeLeft = 15;
+    if (config.mode === 'SURVIVAL') timeLeft = 10;
     
-    document.getElementById('timer-val').textContent = timeLeft;
+    const bar = document.getElementById('timer-bar-fill');
+    // Ensure bar exists before accessing style
+    if (!bar) return;
+
+    bar.style.width = '100%';
+    bar.style.backgroundColor = 'var(--poke-green)';
     
     if (timerInterval) clearInterval(timerInterval);
+    
+    const totalTime = timeLeft;
+    
     timerInterval = setInterval(() => {
-        timeLeft--;
-        document.getElementById('timer-val').textContent = timeLeft;
+        timeLeft -= 0.1;
+        const pct = (timeLeft / totalTime) * 100;
+        bar.style.width = `${pct}%`;
+        
+        if (timeLeft < 5) {
+            bar.style.backgroundColor = 'var(--poke-red)';
+        } else if (timeLeft < 10) {
+            bar.style.backgroundColor = 'var(--poke-yellow)';
+        }
+        
         if (timeLeft <= 0) stopTimer();
-    }, 1000);
+    }, 100);
 }
 
 function stopTimer() {
