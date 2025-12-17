@@ -169,10 +169,10 @@
 }
 
 /* Couleurs spécifiques pour les options */
-.option-0 { background-color: var(--poke-red); }
-.option-1 { background-color: var(--poke-blue); }
-.option-2 { background-color: var(--poke-green); }
-.option-3 { background-color: var(--poke-yellow); color: black !important; text-shadow: none !important; }
+.option-0 { background-color: var(--poke-red) !important; color: white !important; }
+.option-1 { background-color: var(--poke-blue) !important; color: white !important; }
+.option-2 { background-color: var(--poke-green) !important; color: white !important; }
+.option-3 { background-color: var(--poke-yellow) !important; color: black !important; text-shadow: none !important; }
 
 .option-icon {
     width: 40px;
@@ -180,10 +180,12 @@
 }
 
 .option-icon path, .option-icon circle, .option-icon rect, .option-icon polygon {
-    fill: white; /* Icônes blanches pour contraste */
+    fill: white; /* Icônes blanches par défaut */
 }
+
+/* Cas spécial Jaune : Icône noire */
 .option-3 .option-icon path, .option-3 .option-icon circle, .option-3 .option-icon rect, .option-3 .option-icon polygon {
-    fill: black; /* Icône noire sur jaune */
+    fill: black;
 }
 
 /* Result Popup */

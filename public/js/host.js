@@ -220,39 +220,30 @@ socket.on('question-results', (data) => {
 });
 
 socket.on('leaderboard', (data) => {
+    // Hide previous screens overlay
     popups.result.classList.add('hidden');
     
-    if (screens.gameOver.classList.contains('hidden') === false) return;
+    // Check if game is actually over
+    if (!screens.gameOver.classList.contains('hidden')) return;
     
     showScreen('leaderboard');
     updateLeaderboard(data.players);
     
+    // Auto-advance logic
     if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+    
+    // Force next question after 5 seconds
     nextQuestionTimeout = setTimeout(() => {
-        triggerNextQuestion();
+        socket.emit('next-question', { code: gameCode });
     }, 5000);
 });
 
-window.forceNext = function() {
-    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
-    triggerNextQuestion();
-};
-
-function triggerNextQuestion() {
-    socket.emit('next-question', { code: gameCode });
-}
+// Removed manual forceNext functions as requested
 
 socket.on('game-over', (data) => {
+    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
     showScreen('gameOver');
-    const podium = document.getElementById('final-podium');
-    podium.innerHTML = '';
-    
-    data.finalLeaderboard.slice(0, 3).forEach((p, i) => {
-        const div = document.createElement('div');
-        div.innerHTML = `<h3>#${i+1} ${p.pseudo} - ${p.score} PTS</h3>`;
-        podium.appendChild(div);
-    });
-});
+
 
 // Helpers
 function showScreen(id) {

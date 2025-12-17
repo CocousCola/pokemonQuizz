@@ -137,10 +137,10 @@ input[type="text"], input[type="number"] {
 }
 
 /* Couleurs spécifiques pour Mobile */
-.btn-red { background-color: var(--poke-red); }
-.btn-blue { background-color: var(--poke-blue); }
-.btn-green { background-color: var(--poke-green); }
-.btn-yellow { background-color: var(--poke-yellow); }
+.btn-red { background-color: var(--poke-red) !important; }
+.btn-blue { background-color: var(--poke-blue) !important; }
+.btn-green { background-color: var(--poke-green) !important; }
+.btn-yellow { background-color: var(--poke-yellow) !important; }
 
 .answer-btn:active {
     transform: translate(2px, 2px);
