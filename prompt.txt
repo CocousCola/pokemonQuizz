@@ -1,7 +1,6 @@
-file:///opt/render/project/src/server/server.js:186
-SyntaxError: Unexpected end of input
-    at compileSourceTextModule (node:internal/modules/esm/utils:344:16)
-    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:105:18)
-    at #translate (node:internal/modules/esm/loader:534:12)
-    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:581:27)
-    at async ModuleJob._link (node:internal/modules/esm/module_job:116:19)
+Uncaught SyntaxError: Unexpected end of inputUnderstand this error
+12(index):49 Uncaught ReferenceError: updateRangeVal is not defined
+    at HTMLInputElement.oninput ((index):49:131)Understand this error
+(index):1  Failed to load resource: the server responded with a status of 502 ()Understand this error
+4(index):28 Uncaught ReferenceError: selectMode is not defined
+    at HTMLButtonElement.onclick ((index):28:100)

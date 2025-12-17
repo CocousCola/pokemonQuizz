@@ -246,6 +246,25 @@ socket.on('leaderboard', (data) => {
 socket.on('game-over', (data) => {
     if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
     showScreen('gameOver');
+    const podium = document.getElementById('final-podium');
+    podium.innerHTML = '';
+    
+    data.finalLeaderboard.slice(0, 3).forEach((player, i) => {
+        const div = document.createElement('div');
+        div.className = `podium-place place-${i+1}`;
+        const imgUrl = getAvatarUrl(player.trainerSpriteId);
+        
+        div.innerHTML = `
+            <div class="rank retro-font">${i+1}</div>
+            <img src="${imgUrl}" alt="">
+            <div class="name retro-font">${player.pseudo}</div>
+            <div class="score text-pulse">${player.score} pts</div>
+        `;
+        podium.appendChild(div);
+    });
+    
+    confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, colors: ['#FF0000', '#3B4CCA', '#FFDE00'] });
+});
 
 
 // Helpers
