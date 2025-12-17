@@ -1,200 +1,99 @@
-body {
-    background-color: #222; /* Fond sombre pour faire ressortir l'app sur PC */
-}
-
 #app {
-    max-width: 500px; /* Largeur max type "Tablette/Gros téléphone" */
-    margin: 0 auto;   /* Centrer sur la page */
+    max-width: 500px;
+    margin: 0 auto;
     height: 100vh;
-    background-color: var(--poke-red);
-    box-shadow: 0 0 20px rgba(0,0,0,0.5); /* Ombre portée jolie */
-    position: relative;
-    overflow: hidden;
+    background-color: var(--gb-lightest);
+    border-left: 4px solid var(--gb-darkest);
+    border-right: 4px solid var(--gb-darkest);
+    display: flex;
+    flex-direction: column;
 }
 
 .screen {
-    height: 100%;
+    flex: 1;
     display: flex;
     flex-direction: column;
     padding: 20px;
-    background-color: var(--poke-red);
-    color: white;
-    overflow-y: auto; /* Permet de scroller si l'écran est trop petit ! */
-}
-
-/* Scrollbar personnalisée stylée */
-.screen::-webkit-scrollbar {
-    width: 8px;
-}
-.screen::-webkit-scrollbar-track {
-    background: var(--poke-red); 
-}
-.screen::-webkit-scrollbar-thumb {
-    background: var(--poke-yellow); 
-    border-radius: 4px;
+    overflow-y: auto;
 }
 
 header {
     text-align: center;
     margin-bottom: 20px;
-    flex-shrink: 0; /* Empêche le header de s'écraser */
+    background: var(--gb-darkest);
+    color: var(--gb-lightest);
+    padding: 10px;
 }
 
-.trainer-selection {
-    background: white;
-    color: black;
-    padding: 15px;
-    border: 4px solid black;
-    margin-bottom: 20px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
+/* Trainer Selection */
 .trainer-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    margin: 15px 0;
 }
 
 .trainer-option {
-    border: 2px solid transparent;
+    border: 4px solid var(--gb-dark);
+    background: white;
     padding: 5px;
     cursor: pointer;
-    transition: all 0.2s;
 }
 
 .trainer-option.selected {
-    border-color: var(--poke-yellow);
-    background: #fff9c4;
-    transform: scale(1.1);
+    border-color: var(--gb-darkest);
+    background: var(--gb-light);
+    box-shadow: inset 0 0 0 4px var(--gb-darkest);
 }
 
 .trainer-option img {
     width: 100%;
-    image-rendering: pixelated;
 }
 
-#selected-trainer-name {
-    font-size: 0.7rem;
-    color: var(--poke-blue);
-}
-
-.form-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.form-container input {
-    padding: 15px;
-    font-size: 1.2rem;
-    border: 4px solid black;
-}
-
-#join-btn {
-    background: var(--poke-yellow);
-    color: black;
-    font-size: 1.2rem;
-}
-
-/* Waiting Lobby */
-.waiting-content {
-    background: white;
-    color: black;
-    flex: 1;
-    border: 4px solid black;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.player-info img {
-    width: 120px;
-    image-rendering: pixelated;
-}
-
-.pokeball-loader {
-    margin: 30px 0;
-}
-
-.pokeball {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(to bottom, red 50%, white 50%);
-    border-radius: 50%;
-    border: 4px solid black;
-    position: relative;
-    animation: shake 1s infinite;
-}
-
-.pokeball::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background: white;
-    border: 4px solid black;
-    border-radius: 50%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-/* Game Buttons - QCM */
+/* Game Buttons */
 .answer-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 15px;
+    gap: 20px;
     flex: 1;
-    margin-top: 20px;
+    padding-bottom: 20px;
 }
 
 .answer-btn {
+    background: var(--gb-lightest);
+    border: 4px solid var(--gb-darkest);
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2rem;
-    color: white;
-    text-shadow: 2px 2px black;
-    border: 4px solid black;
-    padding: 0;
+    box-shadow: 4px 4px 0 var(--gb-dark);
+    transition: transform 0.1s;
 }
 
-.btn-red { background: var(--poke-red); }
-.btn-blue { background: var(--poke-blue); }
-.btn-green { background: var(--poke-green); }
-.btn-yellow { background: var(--poke-yellow); color: black; text-shadow: none; }
-
-.answer-btn:disabled {
-    opacity: 0.3;
+.answer-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
 }
 
-/* Text Input Mode */
+.answer-btn svg {
+    width: 60px;
+    height: 60px;
+}
+
+.answer-btn svg path, .answer-btn svg circle, .answer-btn svg rect, .answer-btn svg polygon {
+    fill: var(--gb-darkest);
+}
+
+/* Text Input */
 .text-input-area {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    margin-top: 50px;
-    flex: 1;
+    margin-top: auto;
+    margin-bottom: auto;
 }
 
 #answer-input {
-    padding: 20px;
+    width: 100%;
     font-size: 1.5rem;
-    text-align: center;
-    border: 4px solid black;
-    font-family: var(--font-retro);
     text-transform: uppercase;
-}
-
-#validate-btn {
-    background: var(--poke-green);
-    color: white;
-    font-size: 1.5rem;
-    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
 }
 
 /* Feedback */
@@ -205,34 +104,14 @@ header {
     align-items: center;
     justify-content: center;
     text-align: center;
+    border: 8px double var(--gb-darkest);
+    background: var(--gb-light);
 }
 
-.correct { background-color: var(--poke-green); }
-.wrong { background-color: var(--poke-red); }
-
-#feedback-points {
-    font-family: var(--font-retro);
-    font-size: 2rem;
-    margin-top: 20px;
+.feedback-box.correct {
+    background: var(--gb-lightest);
 }
-
-/* Player Mini Stats */
-.game-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(0,0,0,0.2);
-    padding: 10px;
-    border-radius: 10px;
-}
-
-.player-mini-stats {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.player-mini-stats img {
-    width: 40px;
-    image-rendering: pixelated;
+.feedback-box.wrong {
+    background: var(--gb-dark);
+    color: var(--gb-lightest);
 }

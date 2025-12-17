@@ -1,30 +1,29 @@
-# CHANGELOG - Pokémon Quiz Battle
+# CHANGELOG - Pokémon Quiz Engine
 
-## Version 2.0.0 - Spécial Cousquer (Mise à jour majeure)
+## Version 2.1.0 - GameBoy Edition (Retro Overhaul)
 
-### 🌍 Localisation & Langue
-- **FRANÇAIS INTÉGRAL** : Toutes les questions, types, et interface sont maintenant en français.
-- Utilisation de l'API PokeAPI pour récupérer les noms officiels français (Dracaufeu, Tortank, etc.).
-- Traduction manuelle des 18 types et des éléments d'interface.
+### 🎨 Direction Artistique
+- **Style GameBoy** : Palette de couleurs authentique (Vert foncé, Vert clair, Noir).
+- **UI Retro** : Boîtes de dialogue pixelisées, boutons "pressables", police "Press Start 2P".
+- **Animations** : Effets de clignotement, pop-ups dynamiques.
 
-### 🎮 Nouveaux Modes de Jeu
-- **Menu de Sélection** : L'hôte peut maintenant choisir le mode de jeu avant de commencer.
-- **Mode CLASSIQUE** : Quiz QCM traditionnel (12 questions).
-- **Mode ORTHOGRAPHE** : Les joueurs doivent saisir le nom du Pokémon au clavier.
-  - Validation intelligente avec tolérance aux fautes de frappe (Algorithme de Levenshtein).
-  - Input dédié sur mobile.
+### 🛠️ Dashboard Hôte
+- **Menu de Configuration** : Choix du mode de jeu et du nombre de questions avant de créer le lobby.
+- **Support 10 Joueurs** : Grille adaptative pour les grandes parties.
+- **Résultats Instantanés** : Pop-up affichant le gagnant de la manche et son temps précis (ex: 1.24s).
 
-### 📱 Interface Joueur (Mobile)
-- **Formes Géométriques** : Remplacement des boutons textuels par des formes SVG (Cercle, Carré, Rectangle, Étoile) pour une meilleure lisibilité et rapidité.
-- **Mode Saisie** : Apparition automatique d'un champ texte pour le mode Orthographe.
-- **Responsive** : Amélioration de l'affichage sur tous les appareils.
+### 🎮 Modes de Jeu (Architecture)
+- Mise en place de l'interface pour 6 modes :
+  1. **Quiz Image** (Classique)
+  2. **Ombre Chinoise** (Silhouette)
+  3. **Maître des Types** (Nouveau)
+  4. **Cri de Guerre** (Audio)
+  5. **Survie** (Timer rapide)
+  6. **Marathon 151** (Endurance)
 
-### 📺 Interface Hôte (TV)
-- **Classement Visuel** : Nouveau design avec barres de progression colorées et avatars.
-- **Joueur le plus rapide** : Affichage d'un éclair jaune avec le nom du joueur le plus rapide après chaque question.
-- **Affichage des Formes** : Les réponses affichent désormais les icônes géométriques correspondantes.
+### 📱 Interface Joueur
+- Design épuré monochrome pour une lisibilité maximale.
+- Feedback visuel amélioré lors de la sélection.
 
-### ⚙️ Technique
-- Optimisation du chargement des données Pokémon (batch fetching).
-- Refonte du GameManager pour supporter plusieurs types d'inputs (Index vs Texte).
-- Calcul du temps de réponse précis côté serveur.
+---
+*Développé pour les vrais dresseurs.*

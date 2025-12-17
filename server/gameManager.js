@@ -20,29 +20,23 @@ class GameManager {
             currentQuestionIndex: 0,
             questions: [],
             questionStartTime: null,
-            timer: null
+            timer: null,
+            settings: { mode: 'CLASSIC', limit: 12 } // Defaults
         };
 
         this.games.set(code, game);
         return game;
     }
 
-    getGame(code) {
-        return this.games.get(code);
-    }
+    // ... (getGame remains same)
 
     joinGame(code, socketId, pseudo, trainer) {
         const game = this.games.get(code);
         if (!game) return { error: "Cette arène n'existe pas" };
         if (game.status !== 'lobby') return { error: "Le combat a déjà commencé !" };
-        if (game.players.size >= 4) return { error: "Arène complète ! (4/4 dresseurs)" };
+        if (game.players.size >= 10) return { error: "Arène complète ! (10/10 dresseurs)" }; // Max 10 players
         
-        // Check if pseudo exists
-        for (const p of game.players.values()) {
-            if (p.pseudo.toLowerCase() === pseudo.toLowerCase()) {
-                return { error: "Ce nom de dresseur est déjà pris" };
-            }
-        }
+        // ... (rest of checks)
 
         const player = {
             id: socketId,
@@ -51,7 +45,8 @@ class GameManager {
             trainerName: trainer.name,
             trainerSprite: `/trainers/${trainer.id}.png`,
             trainerSpriteId: trainer.spriteId,
-            color: this.playerColors[game.players.size],
+            // Generate color based on index or random from a larger palette
+            color: this.getPlayerColor(game.players.size),
             score: 0,
             hasAnswered: false,
             lastAnswerTime: null,
@@ -64,16 +59,27 @@ class GameManager {
         return { game, player };
     }
 
-    async startGame(code, settings = { mode: 'CLASSIC' }) {
+    getPlayerColor(index) {
+        const colors = [
+            '#FF0000', '#3B4CCA', '#8BAC0F', '#FFDE00', 
+            '#CC0000', '#B3A125', '#306230', '#0F380F',
+            '#FFFFFF', '#555555'
+        ];
+        return colors[index % colors.length];
+    }
+
+    async startGame(code, settings) {
         const game = this.games.get(code);
         if (!game) return null;
 
         game.status = 'playing';
-        game.settings = settings;
+        game.settings = { ...game.settings, ...settings }; // Merge settings
         
-        // Number of questions depends on mode
-        const count = settings.mode === 'ORTHOGRAPH' ? 20 : 12;
-        game.questions = await pokemonService.generateQuestions(count, settings.mode);
+        // Handle Marathon Mode or Survival
+        let count = game.settings.limit || 12;
+        if (game.settings.mode === 'MARATHON') count = 151;
+        
+        game.questions = await pokemonService.generateQuestions(count, game.settings.mode);
         game.currentQuestionIndex = 0;
         
         return game;

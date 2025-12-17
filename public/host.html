@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POKÉMON SPÉCIAL COUSQUER</title>
+    <title>POKÉMON QUIZ ENGINE V2</title>
     <link rel="stylesheet" href="styles/common.css">
     <link rel="stylesheet" href="styles/host.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -11,124 +11,132 @@
 </head>
 <body>
     <div id="app">
-        <!-- Lobby Screen -->
-        <div id="lobby-screen" class="screen">
-            <header>
-                <h1 class="retro-font">POKÉMON SPÉCIAL COUSQUER</h1>
-            </header>
-            
-            <div class="lobby-content">
-                <div class="join-info pixel-border">
-                    <h2>Rejoignez l'Arène !</h2>
-                    <div id="qrcode" class="qrcode-container"></div>
-                    <p id="player-url" class="url-text"></p>
-                    <div class="game-code-container">
-                        <span>CODE DE LA PARTIE :</span>
-                        <h1 id="display-game-code" class="retro-font">----</h1>
+        <!-- Configuration Dashboard -->
+        <div id="config-screen" class="screen flex-center">
+            <div class="retro-box config-container">
+                <header>
+                    <h1>POKÉMON ENGINE V2</h1>
+                    <p class="subtitle">-- MENU PRINCIPAL --</p>
+                </header>
+
+                <div class="config-section">
+                    <h3>1. CHOISIS TON MODE</h3>
+                    <div class="modes-grid">
+                        <button class="mode-btn selected" onclick="selectMode('CLASSIC')" data-mode="CLASSIC">
+                            <span class="icon">🎯</span> QUIZ IMAGE
+                        </button>
+                        <button class="mode-btn" onclick="selectMode('SHADOW')" data-mode="SHADOW">
+                            <span class="icon">👥</span> OMBRE CHINOISE
+                        </button>
+                        <button class="mode-btn" onclick="selectMode('TYPES')" data-mode="TYPES">
+                            <span class="icon">🔥</span> MAÎTRE TYPES
+                        </button>
+                        <button class="mode-btn" onclick="selectMode('CRY')" data-mode="CRY">
+                            <span class="icon">🔊</span> CRI DE GUERRE
+                        </button>
+                        <button class="mode-btn" onclick="selectMode('SURVIVAL')" data-mode="SURVIVAL">
+                            <span class="icon">💀</span> SURVIE
+                        </button>
+                        <button class="mode-btn" onclick="selectMode('MARATHON')" data-mode="MARATHON">
+                            <span class="icon">🏃</span> MARATHON 151
+                        </button>
                     </div>
                 </div>
 
-                <div class="players-list-container">
-                    <h3 class="retro-font">Dresseurs Prêts (<span id="player-count">0</span>/4)</h3>
-                    <div id="players-list" class="players-grid">
-                        <!-- Players will appear here -->
+                <div class="config-section" id="questions-config">
+                    <h3>2. LONGUEUR DU QUIZ</h3>
+                    <div class="range-selector">
+                        <input type="range" id="questions-range" min="5" max="50" value="12" oninput="updateRangeVal(this.value)">
+                        <span id="questions-val">12 QUESTIONS</span>
                     </div>
-                    <button id="start-btn" class="btn hidden">Démarrer l'Arène</button>
                 </div>
+
+                <button id="create-lobby-btn" class="btn large-btn blink">CRÉER LE LOBBY</button>
             </div>
         </div>
 
-        <!-- Game Mode Selection Screen -->
-        <div id="mode-selection-screen" class="screen hidden">
-            <header>
-                <h1 class="retro-font">Choisis ton mode !</h1>
-            </header>
-            <div class="modes-container">
-                <div class="mode-card" onclick="selectMode('CLASSIC')">
-                    <div class="mode-icon">🎯</div>
-                    <h2 class="retro-font">Quiz Classique</h2>
-                    <p>Questions à choix multiples. Rapidité et connaissances !</p>
-                    <div class="difficulty">⭐⭐</div>
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen hidden">
+            <div class="lobby-header">
+                <div class="lobby-info retro-box">
+                    <h2>CODE: <span id="display-game-code" class="blink">----</span></h2>
+                    <p id="mode-display">MODE: CLASSIQUE</p>
                 </div>
-                <div class="mode-card" onclick="selectMode('ORTHOGRAPH')">
-                    <div class="mode-icon">✍️</div>
-                    <h2 class="retro-font">Orthographe</h2>
-                    <p>Écris le nom du Pokémon sans faute (ou presque) !</p>
-                    <div class="difficulty">⭐⭐⭐⭐</div>
-                </div>
-                <!-- POKEDEX mode placeholder for future -->
-                <div class="mode-card disabled">
-                    <div class="mode-icon">🔢</div>
-                    <h2 class="retro-font">Ordre du Pokédex</h2>
-                    <p>Bientôt disponible...</p>
-                    <div class="difficulty">⭐⭐⭐</div>
+                <div class="qr-box retro-box">
+                    <div id="qrcode"></div>
                 </div>
             </div>
+            
+            <div class="players-container retro-box">
+                <h3>JOUEURS CONNECTÉS (<span id="player-count">0</span>/10)</h3>
+                <div id="players-list" class="players-grid-10">
+                    <!-- Players inserted here -->
+                </div>
+            </div>
+
+            <button id="start-game-btn" class="btn large-btn hidden">LANCER LE MATCH !</button>
         </div>
 
         <!-- Question Screen -->
         <div id="question-screen" class="screen hidden">
-            <div class="question-header">
-                <div class="question-count retro-font">Question <span id="current-q">1</span>/12</div>
-                <div class="timer-container">
-                    <div id="timer-bar"></div>
+            <div class="top-bar">
+                <div class="timer-box retro-box">
+                    TIME: <span id="timer-val">15</span>s
+                </div>
+                <div class="progress-box retro-box">
+                    Q: <span id="current-q">1</span>/<span id="total-q">12</span>
                 </div>
             </div>
 
-            <div class="question-content">
-                <h2 id="question-text" class="retro-font">Qui est ce Pokémon ?</h2>
-                <div class="pokemon-display">
-                    <img id="pokemon-sprite" src="" alt="Pokemon" class="silhouette">
+            <div class="main-stage">
+                <div class="pokemon-frame retro-box">
+                    <img id="pokemon-sprite" src="" class="pixel-art">
                 </div>
-                <div id="options-grid" class="options-grid">
-                    <!-- Options shown with shapes -->
-                </div>
-                <!-- Area for Text Input visualization (optional, maybe just show waiting status) -->
-                <div id="text-mode-indicator" class="hidden retro-font">
-                    ✍️ Les joueurs écrivent...
+                <div class="question-text-box retro-box">
+                    <p id="question-text">Loading...</p>
                 </div>
             </div>
 
-            <div class="active-players-status" id="active-players">
-                <!-- Mini cards for players -->
+            <div id="options-grid" class="options-grid">
+                <!-- Options here -->
+            </div>
+            
+            <!-- Type Selector for Type Master Mode -->
+            <div id="type-selector" class="type-grid hidden">
+                <!-- Type buttons here -->
             </div>
         </div>
 
-        <!-- Results Screen (Reveal) -->
-        <div id="results-screen" class="screen hidden">
-            <h1 class="retro-font">Réponse !</h1>
-            
-            <div id="fastest-player-display" class="fastest-player hidden">
-                ⚡ Plus rapide : <span id="fastest-name">Sacha</span> (<span id="fastest-time">1.2s</span>)
-            </div>
-
-            <div class="reveal-container">
-                <h2 id="correct-answer-text" class="retro-font">C'est Pikachu !</h2>
-                <div class="pokemon-reveal">
-                    <img id="reveal-sprite" src="" alt="Pokemon">
+        <!-- Result Popup (Overlay) -->
+        <div id="result-popup" class="popup-overlay hidden">
+            <div class="retro-box popup-content">
+                <h2 id="result-title">RÉSULTAT !</h2>
+                <div class="result-details">
+                    <img id="result-sprite" src="">
+                    <p class="answer-reveal">C'était : <span id="correct-answer">Pikachu</span></p>
+                    <div class="winner-box">
+                        <p>🏆 GAGNANT : <span id="round-winner">Pierre</span></p>
+                        <p class="reaction-time">Temps : <span id="round-time">1.24s</span></p>
+                    </div>
                 </div>
-                <p id="extra-info"></p>
-            </div>
-            <div id="points-summary" class="points-grid">
-                <!-- Points gained this round -->
             </div>
         </div>
 
         <!-- Leaderboard Screen -->
         <div id="leaderboard-screen" class="screen hidden">
-            <h1 class="retro-font">Classement</h1>
-            <div id="leaderboard-list" class="leaderboard-container">
-                <!-- Leaderboard entries -->
+            <div class="retro-box full-height">
+                <h2>CLASSEMENT</h2>
+                <div id="leaderboard-list"></div>
             </div>
         </div>
 
         <!-- Game Over Screen -->
         <div id="game-over-screen" class="screen hidden">
-            <h1 class="retro-font">Fin du Combat !</h1>
-            <div class="podium-container" id="final-podium">
-                <!-- Final podium -->
+            <div class="retro-box center-box">
+                <h1>FIN DE PARTIE</h1>
+                <div id="final-podium"></div>
+                <button onclick="location.reload()" class="btn">RETOUR MENU</button>
             </div>
-            <button id="restart-btn" class="btn">Nouvelle Arène</button>
         </div>
     </div>
 

@@ -1,371 +1,50 @@
-Tu es un développeur expert. Tu dois MODIFIER le code existant d'un quiz Pokémon Gen 1 local WiFi avec les améliorations suivantes :
+Prompt de Développement Web : Pokémon Quiz Engine v2
+Contexte : Refonte d'une application web de quiz multijoueur en temps réel. Stack visée : Style Retro CSS / GameBoy Generation 1.
 
-═══════════════════════════════════════════════════════════════
-                    🔧 MODIFICATIONS DEMANDÉES
-═══════════════════════════════════════════════════════════════
+1. Logique Multijoueur & Feedback (Real-time)
+Affichage des Scores : À la fin de chaque question, générer une fenêtre "Pop-up" ou un insert dans le DOM affichant : la bonne réponse, le nom du gagnant, et son temps de réaction précis (ex: 1.24s).
 
-1. 🏆 AFFICHAGE DU CLASSEMENT DE FIN - AMÉLIORATION VISUELLE
-   - Le classement final doit afficher les pseudos en PETIT et AU-DESSUS de la barre de score
-   - Actuellement les pseudos sont trop gros ou mal placés, il faut les rendre discrets
-   - Structure visuelle attendue pour chaque joueur :
- [Pseudo en petit, 14px, couleur grise]
-       ▓▓▓▓▓▓▓▓▓▓ [Barre de score colorée]
-                          [Score en gros, 32px]
-   - Les barres doivent être proportionnelles aux scores (le 1er = 100% de largeur)
-   - Espacer les barres verticalement pour une meilleure lisibilité
+Validation visuelle : Lorsqu'un utilisateur soumet une réponse, son avatar ou son nom dans la liste des joueurs doit s'illuminer ou changer d'état (ex: une icône Pokéball apparaît à côté de son nom) pour confirmer que sa réponse est prise en compte.
 
-2. 🇫🇷 TRADUCTION EN FRANÇAIS - CRITIQUE
-   - PROBLÈME : Les réponses et noms de Pokémon sont en anglais, c'est inacceptable
-   - SOLUTION : Tout doit être traduit en français
-   - Utilise l'API PokeAPI avec le paramètre de langue :
-     * Noms de Pokémon : utilise `species.names` avec filter `language.name === "fr"`
-     * Types : traduire (Fire → Feu, Water → Eau, Grass → Plante, etc.)
-     * Talents : utilise `abilities[].names` avec filter `language.name === "fr"`
-   - Crée une fonction de traduction côté serveur pour tous les textes du jeu
-   - Exemples de traductions obligatoires :
-     * Charizard → Dracaufeu
-     * Blastoise → Tortank
-     * Venusaur → Florizarre
-     * Fire → Feu
-     * Water → Eau
-     * Grass → Plante
-     * Electric → Électrik
-     * etc.
+Capacité : S'assurer que le backend et l'interface peuvent gérer jusqu'à 10 joueurs (grille de joueurs adaptative).
 
-3. 📱 INTERFACE MOBILE - FORMES AU LIEU DE TEXTE
-   - PROBLÈME : Les boutons de réponse avec du texte sont moches sur mobile
-   - SOLUTION : Remplacer le texte par des FORMES GÉOMÉTRIQUES
-   - Les 4 boutons doivent contenir uniquement :
-     * Bouton 1 (Rouge) : ⚫ CERCLE
-     * Bouton 2 (Bleu) : ◼️ CARRÉ
-     * Bouton 3 (Vert) : ▬ RECTANGLE
-     * Bouton 4 (Jaune) : ⭐ ÉTOILE
-   - Les formes doivent être dessinées en SVG ou CSS (pas d'emojis)
-   - Taille des formes : 60x60px, centrées dans le bouton
-   - Le texte de la réponse s'affiche UNIQUEMENT sur l'écran TV, pas sur mobile
-   - Structure mobile attendue :
- [Bouton rouge avec cercle blanc au centre]
- [Bouton bleu avec carré blanc au centre]
- [Bouton vert avec rectangle blanc au centre]
- [Bouton jaune avec étoile blanche au centre]
-   - Sur l'écran TV, afficher : "Cercle : Dracaufeu", "Carré : Tortank", etc.
+2. Configuration de la Session (Host Control)
+Dashboard Hôte : Créer un menu avant-match permettant à l'hôte de définir le nombre de questions par partie.
 
-4. 🎊 ANIMATION DE DÉPASSEMENT ENTRE QUESTIONS
-   - PROBLÈME : Pas d'animation quand un joueur en dépasse un autre au classement
-   - SOLUTION : Animation visuelle de dépassement entre chaque question
-   - Scénario :
-     * Avant la question : Joueur A = 2e place, Joueur B = 3e place
-     * Après la question : Joueur B dépasse Joueur A
-     * → Animation : les deux cartes de joueurs s'échangent avec effet de swap
-   - L'animation doit se produire sur l'écran TV pendant l'affichage du classement
-   - Effet visuel :
-     * Durée : 1 seconde
-     * Les cartes concernées glissent l'une vers l'autre (swap vertical)
-     * Effet de "whoosh" ou son de dépassement (optionnel)
-     * Flash doré autour du joueur qui dépasse
-   - Si plusieurs dépassements, les animer séquentiellement (pas tous en même temps)
+Conditions d'arrêt : Le script de boucle de jeu doit inclure un check rigoureux : if (currentQuestion >= limit) { endGameState() }.
 
-5. ⚡ AFFICHAGE DU JOUEUR LE PLUS RAPIDE
-   - PROBLÈME : On ne sait pas qui a été le plus rapide à répondre
-   - SOLUTION : Afficher après chaque question le joueur le plus rapide avec son temps
-   - Sur l'écran TV, après avoir montré la bonne réponse :
-     * Affichage : "⚡ Réponse la plus rapide : [Pseudo] en 2.4 secondes !"
-     * Animation : éclair jaune Pikachu qui entoure le nom du joueur
-     * Taille de texte : 24px, couleur jaune électrique
-     * Position : en haut de l'écran, bien visible
-     * Durée : 3 secondes avant de passer au classement
-   - Si personne n'a répondu correctement, afficher : "❌ Personne n'a trouvé !"
+Exception : Cette limite est désactivée pour le mode "151 Pokémon".
 
-6. 🎛️ MENU DE SÉLECTION DES MODES DE JEU
-   - PROBLÈME : Un seul mode de jeu actuellement (questions à choix multiples)
-   - SOLUTION : Créer un menu pour que l'hôte choisisse le mode avant de démarrer
-   - Écran de sélection après "Créer une Arène" :
-     * Titre : "Choisis le mode de bataille !"
-     * 3 cartes cliquables pour les modes :
-       
-       [Mode 1] 🎯 Quiz Classique (mode actuel)
-       [Mode 2] ✍️ Orthographe Pokémon
-       [Mode 3] 🔢 Ordre du Pokédex
-       
-     * Chaque carte affiche une description du mode
-     * Une fois le mode choisi, le code de partie est généré
-     * Le mode est affiché sur l'écran de lobby : "Mode : Orthographe Pokémon"
+3. Modes de Jeu (Catalogue de 6 modes)
+Implémenter les modes suivants avec une interface dédiée :
 
-7. ✍️ MODE "ORTHOGRAPHE POKÉMON" - NOUVEAU MODE
-   - PRINCIPE : Les joueurs doivent taper le nom du Pokémon affiché EN FRANÇAIS
-   - Fonctionnement :
-     * L'écran TV affiche le sprite du Pokémon (sans le nom)
-     * Sur mobile : un champ de saisie texte (input type="text")
-     * Placeholder : "Écris le nom du Pokémon..."
-     * Le joueur tape le nom et appuie sur "Valider"
-     * Timer de 20 secondes (plus long car il faut taper)
-   - Validation avec TOLÉRANCE :
-     * Accepter 1-2 fautes de frappe (algorithme de distance de Levenshtein)
-     * Exemples acceptés pour "Dracaufeu" :
-       - "Dracaufeu" ✅
-       - "Dracofeu" ✅ (1 faute)
-       - "Dracaufau" ✅ (1 faute)
-       - "Drakofeu" ❌ (2 fautes, trop loin)
-     * Ignorer les majuscules/minuscules
-     * Ignorer les espaces en trop
-     * Accepter les accents ou non (é = e)
-   - Système de points :
-     * Nom parfait : 1000 points + bonus vitesse
-     * 1 faute : 800 points + bonus vitesse
-     * 2 fautes : 500 points + bonus vitesse
-     * Plus de 2 fautes ou timeout : 0 point
-   - Questions : 20 Pokémon aléatoires de la Gen 1 (IDs 1-151)
+Le Marathon des 151 : Les joueurs doivent taper les noms des 151 Pokémon dans l'ordre. L'interface doit afficher une grille de progression 151 cases qui se remplissent.
 
-8. 🔢 MODE "ORDRE DU POKÉDEX" - NOUVEAU MODE
-   - PRINCIPE : Les joueurs doivent connaître l'ordre exact des 151 Pokémon
-   - Sous-mode 1 : "Quel est le numéro ?"
-     * L'écran TV affiche un Pokémon
-     * Sur mobile : 4 boutons avec des numéros proches
-     * Exemple : Pikachu est le n°25
-       - Cercle : 23
-       - Carré : 25 ✅
-       - Rectangle : 27
-       - Étoile : 29
-     * 15 questions de ce type
-   
-   - Sous-mode 2 : "Qui est le n°X ?"
-     * L'écran TV affiche : "Qui est le Pokémon n°42 ?"
-     * Sur mobile : 4 formes avec 4 noms différents (affichés sur TV)
-     * Exemple pour n°42 (Nosferalto) :
-       - Cercle : Nosferapti
-       - Carré : Nosferalto ✅
-       - Rectangle : Nostenfer
-       - Étoile : Mystherbe
-     * 15 questions de ce type
-   
-   - Sous-mode 3 : "Ordre chronologique"
-     * L'écran TV affiche 3 Pokémon dans le désordre
-     * Sur mobile : le joueur doit les remettre dans l'ordre du Pokédex
-     * Interface mobile : 3 zones de drop ou 3 boutons "1er, 2e, 3e" à taper
-     * Exemple : Affiche Salamèche (4), Bulbizarre (1), Carapuce (7)
-       - Bonne réponse : 1 → 4 → 7
-     * 10 questions de ce type
-   
-   - L'hôte choisit quel sous-mode activer (ou mode mixte avec les 3)
+Quiz Image Classique : Reconnaissance de sprites.
 
-9. 💡 PROPOSITIONS DE MODES SUPPLÉMENTAIRES
-   - Mode "Évolutions" : 
-     * Affiche un Pokémon de base, le joueur doit taper ses évolutions dans l'ordre
-     * Exemple : Chenipan → tape "Chrysacier, Papilusion"
-     * Validation avec tolérance sur l'orthographe
-   
-   - Mode "Types" :
-     * Affiche un Pokémon, le joueur doit taper son/ses types en français
-     * Exemple : Dracaufeu → tape "Feu Vol" ou "Feu, Vol"
-     * Validation : accepter dans n'importe quel ordre
-   
-   - Mode "Qui vient après ?" :
-     * Affiche le Pokémon n°X, le joueur doit trouver le n°X+1
-     * Exemple : Affiche Roucool (16) → réponse : Roucoups (17)
-   
-   - Mode "Stats" :
-     * Affiche 2 Pokémon, le joueur doit deviner lequel a la stat la plus haute
-     * Exemple : "Qui a le plus d'Attaque : Dracolosse ou Mewtwo ?"
-   
-   - Mode "Cris" :
-     * Joue le cri d'un Pokémon, le joueur doit taper son nom
-     * Plus difficile car pas de visuel
-   
-   - Mode "Marathon" :
-     * Le joueur doit réciter les 151 Pokémon dans l'ordre sans se tromper
-     * Après chaque bonne réponse, passer au suivant
-     * Une erreur = éliminé
-     * Le dernier en lice gagne
+L'Ombre Chinoise : Afficher uniquement la silhouette (filtre CSS brightness(0)).
 
-10. 🔧 SPÉCIFICATIONS TECHNIQUES IMPORTANTES
-    - Pour la distance de Levenshtein, utilise cet algorithme :
-```javascript
-      function levenshteinDistance(a, b) {
-        const matrix = [];
-        for (let i = 0; i <= b.length; i++) {
-          matrix[i] = [i];
-        }
-        for (let j = 0; j <= a.length; j++) {
-          matrix[0][j] = j;
-        }
-        for (let i = 1; i <= b.length; i++) {
-          for (let j = 1; j <= a.length; j++) {
-            if (b.charAt(i - 1) === a.charAt(j - 1)) {
-              matrix[i][j] = matrix[i - 1][j - 1];
-            } else {
-              matrix[i][j] = Math.min(
-                matrix[i - 1][j - 1] + 1,
-                matrix[i][j - 1] + 1,
-                matrix[i - 1][j] + 1
-              );
-            }
-          }
-        }
-        return matrix[b.length][a.length];
-      }
-      
-      function isAnswerValid(userInput, correctAnswer, maxDistance = 2) {
-        const distance = levenshteinDistance(
-          userInput.toLowerCase().trim(),
-          correctAnswer.toLowerCase().trim()
-        );
-        return distance <= maxDistance;
-      }
-```
-    
-    - Pour les formes géométriques en SVG :
-```html
-      <!-- Cercle -->
-      <svg width="60" height="60"><circle cx="30" cy="30" r="25" fill="white"/></svg>
-      
-      <!-- Carré -->
-      <svg width="60" height="60"><rect x="10" y="10" width="40" height="40" fill="white"/></svg>
-      
-      <!-- Rectangle -->
-      <svg width="60" height="60"><rect x="5" y="15" width="50" height="30" fill="white"/></svg>
-      
-      <!-- Étoile -->
-      <svg width="60" height="60"><polygon points="30,5 35,20 50,23 40,35 43,50 30,42 17,50 20,35 10,23 25,20" fill="white"/></svg>
-```
-    
-    - Pour l'animation de swap du classement :
-```css
-      @keyframes swap-up {
-        0% { transform: translateY(0); }
-        50% { transform: translateY(-80px) scale(1.1); }
-        100% { transform: translateY(0); }
-      }
-      
-      @keyframes swap-down {
-        0% { transform: translateY(0); }
-        50% { transform: translateY(80px) scale(0.9); }
-        100% { transform: translateY(0); }
-      }
-      
-      .player-card.swapping-up {
-        animation: swap-up 1s ease-in-out;
-        z-index: 10;
-      }
-      
-      .player-card.swapping-down {
-        animation: swap-down 1s ease-in-out;
-        z-index: 5;
-      }
-```
-    
-    - Pour la traduction des noms de Pokémon, utilise PokeAPI :
-```javascript
-      async function getPokemonNameFr(pokemonId) {
-        const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${pokemonId}`);
-        const data = await response.json();
-        const frenchName = data.names.find(n => n.language.name === 'fr');
-        return frenchName ? frenchName.name : data.name;
-      }
-```
-    
-    - Traduction des types :
-```javascript
-      const typeTranslations = {
-        'normal': 'Normal',
-        'fire': 'Feu',
-        'water': 'Eau',
-        'grass': 'Plante',
-        'electric': 'Électrik',
-        'ice': 'Glace',
-        'fighting': 'Combat',
-        'poison': 'Poison',
-        'ground': 'Sol',
-        'flying': 'Vol',
-        'psychic': 'Psy',
-        'bug': 'Insecte',
-        'rock': 'Roche',
-        'ghost': 'Spectre',
-        'dragon': 'Dragon',
-        'dark': 'Ténèbres',
-        'steel': 'Acier',
-        'fairy': 'Fée'
-      };
-```
+Maître des Types : Afficher un Pokémon, les joueurs doivent cliquer sur ses deux types le plus vite possible.
 
-11. 📋 STRUCTURE DU MENU DE MODES
-    - Écran après "Créer une Arène" :
-  ╔════════════════════════════════════════════╗
-  ║     Choisis ton mode de bataille !        ║
-  ╚════════════════════════════════════════════╝
-  
-  ┌─────────────────────────────────────────┐
-  │  🎯 QUIZ CLASSIQUE                      │
-  │  Questions à choix multiples            │
-  │  4 réponses possibles                   │
-  │  12 questions                           │
-  │  Difficulté : ⭐⭐                       │
-  └─────────────────────────────────────────┘
-  
-  ┌─────────────────────────────────────────┐
-  │  ✍️ ORTHOGRAPHE POKÉMON                 │
-  │  Écris le nom du Pokémon affiché        │
-  │  Tolérance de 1-2 fautes                │
-  │  20 questions                           │
-  │  Difficulté : ⭐⭐⭐⭐                   │
-  └─────────────────────────────────────────┘
-  
-  ┌─────────────────────────────────────────┐
-  │  🔢 ORDRE DU POKÉDEX                    │
-  │  Connais-tu l'ordre des 151 ?           │
-  │  Numéros, noms, ordres                  │
-  │  Mode mixte ou au choix                 │
-  │  Difficulté : ⭐⭐⭐                     │
-  └─────────────────────────────────────────┘
-    
-    - Chaque carte est cliquable
-    - Une fois cliquée, elle s'agrandit et affiche "Mode sélectionné !"
-    - Puis génère le code de partie et passe au lobby
+Le Cri de Guerre : Jouer un son d'archive .wav, identifier le Pokémon.
 
-12. 🎨 CONSIGNES DE DESIGN
-    - Les modifications doivent respecter le style rétro Gen 1 existant
-    - Les nouvelles animations doivent être fluides (60fps)
-    - Le texte doit rester lisible sur tous les écrans (contraste suffisant)
-    - Les formes géométriques doivent être claires même sur petits écrans
-    - Le menu de modes doit être responsive (mobile + TV)
+Survie (Sudden Death) : Le temps de réponse diminue de 10% à chaque bonne réponse.
 
-═══════════════════════════════════════════════════════════════
-                    📝 INSTRUCTIONS DE MODIFICATION
-═══════════════════════════════════════════════════════════════
+4. UI/UX : Direction Artistique "Génération 1"
+Framework CSS : Utiliser une esthétique "8-bit". Bordures noires épaisses, coins carrés, et police d'écriture Press Start 2P.
 
-1. ANALYSE le code existant pour comprendre la structure
-2. MODIFIE les fichiers concernés sans tout réécrire
-3. AJOUTE les nouveaux modes de jeu de manière modulaire
-4. TESTE que tout fonctionne avec les modes existants
-5. COMMENTE les changements importants en français
-6. GÉNÈRE un fichier CHANGELOG.md listant toutes les modifications
+Palette de couleurs : Nuances de gris, vert GameBoy et blanc cassé.
 
-FICHIERS À MODIFIER PRINCIPALEMENT :
-- server/gameManager.js → ajouter les nouveaux modes
-- server/pokemonService.js → traduction française + distance de Levenshtein
-- public/host.html → menu de sélection + affichage des formes sur TV
-- public/player.html → formes géométriques au lieu de texte
-- public/js/host.js → animations de dépassement + joueur le plus rapide
-- public/js/player.js → gestion des formes + input texte pour mode orthographe
-- public/styles/host.css → styles pour nouveau classement + animations
-- public/styles/player.css → styles pour formes géométriques
+Composants : * Boutons avec effet de pression "clic" rétro.
 
-PRIORITÉ DES MODIFICATIONS :
-1. ✍️ Traduction française (CRITIQUE)
-2. 📱 Formes géométriques sur mobile
-3. 🏆 Amélioration visuelle du classement
-4. ⚡ Affichage du joueur le plus rapide
-5. 🎊 Animation de dépassement
-6. 🎛️ Menu de sélection des modes
-7. ✍️ Mode "Orthographe Pokémon"
-8. 🔢 Mode "Ordre du Pokédex"
+Boîtes de dialogue avec le curseur clignotant.
 
-NE PAS :
-- Réécrire tout le code from scratch
-- Casser les fonctionnalités existantes
-- Changer l'architecture globale
-- Modifier les dépendances (package.json)
+Animations de transition fluides simulant les transitions de combat Pokémon.
 
-GÉNÈRE :
-- Le code modifié complet et fonctionnel
-- Un fichier CHANGELOG.md avec toutes les modifications
-- Des commentaires clairs pour chaque changement majeur
+Structure visuelle suggérée pour l'interface :
+Conseils pour la mise en œuvre technique :
+Websockets (Socket.io) : Indispensable pour que le "temps de réponse" soit calculé côté serveur et synchronisé pour les 10 joueurs.
+
+Assets : Utilise l'API PokeAPI pour récupérer les noms, types et sprites officiels de la G1.
+
+Performance : Pré-charge les images du prochain tour pour éviter les latences d'affichage.
