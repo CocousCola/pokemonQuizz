@@ -337,8 +337,20 @@ socket.on('player-answered', (data) => {
 });
 
 socket.on('question-results', (data) => {
-    stopTimer();
+    // FORCE SUSPENSE: Wait for visual timer to finish if it hasn't
+    const remainingTime = Math.max(0, timeLeft * 1000); // ms
     
+    // Ensure bar goes to 0 visually
+    const bar = document.getElementById('timer-bar-fill');
+    if(bar) bar.style.width = '0%';
+
+    setTimeout(() => {
+        stopTimer();
+        showResultPopup(data);
+    }, remainingTime);
+});
+
+function showResultPopup(data) {
     const popup = popups.result;
     const sprite = document.getElementById('result-sprite');
     
@@ -373,7 +385,7 @@ socket.on('question-results', (data) => {
     setTimeout(() => {
         socket.emit('request-leaderboard', { code: gameCode });
     }, 6000);
-});
+}
 
 socket.on('leaderboard', (data) => {
     popups.result.classList.add('hidden');
