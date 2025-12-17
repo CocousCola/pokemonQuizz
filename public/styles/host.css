@@ -252,6 +252,11 @@ input[type=range]::-webkit-slider-thumb {
     margin: 20px 0;
 }
 
+/* Visual Effects */
+.blur { filter: blur(15px); }
+.shadow { filter: brightness(0); }
+.silhouette { filter: brightness(0); } /* Alias */
+
 .answer-reveal {
     font-size: 2rem;
     margin-bottom: 20px;
@@ -260,18 +265,31 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .winner-box {
-    background: var(--poke-green);
-    color: white;
+    background: var(--gb-dark); /* Vert foncé */
+    color: white !important;    /* Blanc forcé */
     padding: 20px;
     border: 4px solid var(--gb-darkest);
     font-size: 1.2rem;
     margin-top: 20px;
     border-radius: 8px;
+    text-shadow: 1px 1px 0 black;
 }
 
-.winner-box.hidden {
-    display: none;
+.winner-box p, .winner-box span {
+    color: white !important;
 }
+
+/* Rank Indicators */
+.rank-change {
+    display: inline-block;
+    width: 30px;
+    text-align: center;
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+.rank-up { color: #00ff00; text-shadow: 1px 1px 0 black; } /* Vert fluo */
+.rank-down { color: #ff3a3a; text-shadow: 1px 1px 0 black; } /* Rouge */
+.rank-same { color: #ccc; }
 
 /* Leaderboard */
 .leaderboard-container {

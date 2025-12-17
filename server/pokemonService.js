@@ -120,13 +120,13 @@ class PokemonService {
 
         for (let i = 0; i < count; i++) {
             const type = types[Math.floor(Math.random() * types.length)];
-            const question = await this.createQuestion(type);
+            const question = await this.createQuestion(type, i, mode);
             questions.push(question);
         }
         return questions;
     }
 
-    async createQuestion(type) {
+    async createQuestion(type, index = 0, mode = 'CLASSIC') {
         const mainPokemon = this.getRandomPokemon(1)[0];
         const others = this.getRandomPokemon(4).filter(p => p.id !== mainPokemon.id).slice(0, 3);
         
@@ -134,13 +134,59 @@ class PokemonService {
             type: type,
             inputType: (type === 'WHO_IS_THIS_TEXT') ? 'TEXT' : 'QCM',
             pokemon: {
-                name: mainPokemon.nameFr, // Use French name
+                name: mainPokemon.nameFr,
                 sprite: mainPokemon.sprites.other['official-artwork'].front_default || mainPokemon.sprites.front_default,
                 id: mainPokemon.id
             },
             options: [],
             answer: ''
         };
+
+        // Marathon Specific Logic
+        if (mode === 'MARATHON') {
+            questionData.type = 'WHO_IS_THIS_TEXT';
+            questionData.inputType = 'TEXT';
+            questionData.answer = mainPokemon.nameFr;
+            
+            // Progressive Difficulty
+            if (index < 10) { // Q1-10: Easy - Shadow
+                 questionData.text = "Quel est ce Pokémon ?";
+                 questionData.forceShadow = true;
+            } else if (index < 20) { // Q11-20: Harder - Number only
+                 questionData.text = `Qui est le Pokémon n°${mainPokemon.id} ?`;
+                 questionData.hideSprite = true;
+            } else { // Q21+: Expert - Blur or just name
+                 // Let's keep it playable: Shadow but maybe rotated? Or just Shadow for now.
+                 // Prompt asked for: 1-50 number, 51-100 shadow, 101+ blur.
+                 // Let's stick to prompt but scale it down for testing (user won't play 151 questions now).
+                 // Actually prompt says: "Plus on approche de la fin plus tu affiches l'ombre".
+                 // Let's do: Start = Number only. Middle = Blur. End = Shadow.
+                 questionData.text = "Quel est ce Pokémon ?";
+                 questionData.forceBlur = true;
+            }
+            
+            // Override prompt logic to match user request exactly:
+            // "Limite plus on approche de la fin plus tu affiche l'ombre noir du pokemon"
+            // So Start = Hard (No image/Blur)? Or Start = Easy?
+            // "tu la floutes ou tu la caches, tu mets juste un numéro"
+            
+            // Implementation:
+            // 0-50: Number Only (Hidden Sprite)
+            // 51-100: Blur
+            // 101-151: Shadow
+            if (index < 50) {
+                questionData.text = `Qui est le Pokémon n°${mainPokemon.id} ?`;
+                questionData.hideSprite = true;
+            } else if (index < 100) {
+                questionData.text = "Qui est ce Pokémon ? (Flou)";
+                questionData.forceBlur = true;
+            } else {
+                questionData.text = "Qui est ce Pokémon ? (Ombre)";
+                questionData.forceShadow = true;
+            }
+            
+            return questionData;
+        }
 
         switch (type) {
             case 'WHO_IS_THIS':

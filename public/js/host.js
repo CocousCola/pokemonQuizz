@@ -6,7 +6,8 @@ let currentQuestion = null;
 let timerInterval = null;
 let timeLeft = 15;
 let nextQuestionTimeout = null;
-let allPlayers = []; // Store players for pressure display
+let allPlayers = []; 
+let previousRanks = {}; // { playerId: rankIndex }
 let config = {
     mode: 'CLASSIC',
     limit: 12
@@ -23,9 +24,6 @@ const screens = {
 const popups = {
     result: document.getElementById('result-popup')
 };
-
-// Safety: Ensure popup is hidden on load
-popups.result.classList.add('hidden');
 
 // SVG Icons for Options
 const shapeIcons = [
@@ -49,6 +47,7 @@ function showScreen(id) {
 function startTimer() {
     timeLeft = 15;
     if (config.mode === 'SURVIVAL') timeLeft = 10;
+    if (config.mode === 'MARATHON') timeLeft = 20; // More time for typing
     
     const bar = document.getElementById('timer-bar-fill');
     if (!bar) return;
@@ -80,7 +79,7 @@ function stopTimer() {
 }
 
 function updateLeaderboard(players) {
-    allPlayers = players; // Update global list
+    allPlayers = players;
     const list = document.getElementById('leaderboard-list');
     
     if (list) {
@@ -88,16 +87,29 @@ function updateLeaderboard(players) {
         const maxScore = Math.max(...players.map(p => p.score), 1);
 
         players.forEach((p, i) => {
+            // Rank Logic
+            let rankIcon = '<span class="rank-change rank-same">➖</span>';
+            const currentRank = i;
+            
+            if (previousRanks[p.id] !== undefined) {
+                const prev = previousRanks[p.id];
+                if (currentRank < prev) { // Improved (lower index is better)
+                    rankIcon = '<span class="rank-change rank-up">⬆️</span>';
+                } else if (currentRank > prev) {
+                    rankIcon = '<span class="rank-change rank-down">⬇️</span>';
+                }
+            }
+
             const div = document.createElement('div');
             div.className = 'leaderboard-item slide-in';
             div.style.animationDelay = `${i * 0.1}s`;
             const imgUrl = getAvatarUrl(p.trainerSpriteId);
-            const barWidth = Math.max((p.score / maxScore) * 100, 5); 
+            const barWidth = Math.max((p.score / maxScore) * 100, 5);
             
             div.innerHTML = `
                 <img src="${imgUrl}" class="leaderboard-avatar">
                 <div class="leaderboard-info">
-                    <span class="leaderboard-pseudo">#${i+1} ${p.pseudo}</span>
+                    <span class="leaderboard-pseudo">${rankIcon} #${i+1} ${p.pseudo}</span>
                     <span class="leaderboard-score-text">${p.score}</span>
                 </div>
                 <div class="leaderboard-bar-container">
@@ -106,6 +118,11 @@ function updateLeaderboard(players) {
             `;
             list.appendChild(div);
         });
+        
+        // Update ranks
+        const newRanks = {};
+        players.forEach((p, i) => { newRanks[p.id] = i; });
+        previousRanks = newRanks;
     }
 }
 
@@ -152,7 +169,7 @@ socket.on('server-info', (data) => {
     if (urlEl) urlEl.textContent = playerURL;
 });
 
-// UI Handlers (Global)
+// UI Handlers
 window.selectMode = function(mode) {
     config.mode = mode;
     document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('selected'));
@@ -204,7 +221,7 @@ socket.on('game-created', (data) => {
 });
 
 socket.on('lobby-update', (data) => {
-    allPlayers = data.players; // Store players
+    allPlayers = data.players;
     const list = document.getElementById('players-list');
     const countEl = document.getElementById('player-count');
     const startBtn = document.getElementById('start-game-btn');
@@ -241,27 +258,31 @@ socket.on('question', (data) => {
     currentQuestion = data.question;
     document.getElementById('current-q').textContent = data.questionNumber;
     
-    // Reset Active Players Visuals
     updateActivePlayers();
-    
     startTimer();
     
     document.getElementById('question-text').textContent = currentQuestion.text;
     const sprite = document.getElementById('pokemon-sprite');
     
+    // Reset filters
+    sprite.className = 'pixel-art'; // Base class
+    sprite.style.filter = 'none';
+
     if (currentQuestion.hideSprite) {
         sprite.classList.add('hidden');
     } else {
         sprite.classList.remove('hidden');
         sprite.src = currentQuestion.pokemon.sprite;
-        sprite.style.filter = 'none';
         
-        if (config.mode === 'SHADOW') {
-            sprite.style.filter = 'brightness(0)';
-        } else if (currentQuestion.type.includes('WHO_IS') && currentQuestion.inputType !== 'TEXT') {
-            sprite.classList.add('silhouette');
-        } else {
-            sprite.classList.remove('silhouette');
+        // Apply Visual Effects
+        if (currentQuestion.forceShadow || config.mode === 'SHADOW') {
+            sprite.classList.add('shadow');
+        } 
+        if (currentQuestion.forceBlur) {
+            sprite.classList.add('blur');
+        }
+        if (currentQuestion.type.includes('WHO_IS') && currentQuestion.inputType !== 'TEXT') {
+            sprite.classList.add('shadow'); // Classic WHO IS gets shadow
         }
     }
 
@@ -291,8 +312,7 @@ socket.on('player-answered', (data) => {
     if (playerCard) {
         playerCard.classList.add('answered');
         const img = playerCard.querySelector('img');
-        if(img) img.style.opacity = '0.5'; // Visual feedback
-        // Optional: Add a checkmark overlay
+        if(img) img.style.opacity = '0.5';
     }
 });
 
