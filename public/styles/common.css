@@ -98,6 +98,8 @@ input[type="text"], input[type="number"] {
 
 .hidden {
     display: none !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
 }
 
 .flex-center {

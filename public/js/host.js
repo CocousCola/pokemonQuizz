@@ -23,6 +23,9 @@ const popups = {
     result: document.getElementById('result-popup')
 };
 
+// Safety: Ensure popup is hidden on load
+popups.result.classList.add('hidden');
+
 // SVG Icons for Options
 const shapeIcons = [
     `<svg viewBox="0 0 60 60" class="option-icon"><circle cx="30" cy="30" r="25" fill="white"/></svg>`,
