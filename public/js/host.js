@@ -179,26 +179,43 @@ socket.on('question-results', (data) => {
     const popup = popups.result;
     const sprite = document.getElementById('result-sprite');
     
-    sprite.src = currentQuestion.pokemon.sprite;
+    // Show correct sprite
+    const questionSprite = currentQuestion.pokemon.sprite;
+    if (questionSprite) {
+        sprite.src = questionSprite;
+        sprite.classList.remove('hidden');
+    } else {
+        sprite.classList.add('hidden');
+    }
+    
+    // Show correct answer text
     document.getElementById('correct-answer').textContent = data.correctAnswer;
     
+    // Show Winner / Fastest Player
     const winnerEl = document.getElementById('round-winner');
     const timeEl = document.getElementById('round-time');
+    const winnerBox = document.querySelector('.winner-box');
     
     if (data.fastest) {
         winnerEl.textContent = data.fastest.pseudo;
         timeEl.textContent = `${data.fastest.time}s`;
-        winnerEl.parentElement.classList.remove('hidden');
+        winnerBox.classList.remove('hidden'); // Ensure visible
+        winnerBox.style.backgroundColor = 'var(--gb-dark)'; // Green bg
     } else {
         winnerEl.textContent = "Personne...";
         timeEl.textContent = "--";
+        winnerBox.style.backgroundColor = 'var(--gb-darkest)'; // Darker bg for fail
     }
+    
+    // Display extra info if any
+    // document.getElementById('extra-info').textContent = data.extra || ''; // Not present in new popup design yet, let's skip or add later
     
     popup.classList.remove('hidden');
     
+    // Wait longer (6s) to let people read
     setTimeout(() => {
         socket.emit('request-leaderboard', { code: gameCode });
-    }, 4000);
+    }, 6000);
 });
 
 socket.on('leaderboard', (data) => {
