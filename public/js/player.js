@@ -1,27 +1,27 @@
 const socket = io();
 
-const trainers = [
-    { id: 'red', name: 'Red', spriteId: 1 },
-    { id: 'blue', name: 'Blue', spriteId: 2 },
-    { id: 'oak', name: 'Prof. Oak', spriteId: 123 },
-    { id: 'ash', name: 'Ash', spriteId: 104 },
-    { id: 'misty', name: 'Misty', spriteId: 17 },
-    { id: 'brock', name: 'Brock', spriteId: 16 },
-    { id: 'erika', name: 'Erika', spriteId: 19 },
-    { id: 'koga', name: 'Koga', spriteId: 20 },
-    { id: 'giovanni', name: 'Giovanni', spriteId: 23 },
-    { id: 'jessie', name: 'Jessie', spriteId: 105 },
-    { id: 'james', name: 'James', spriteId: 106 },
-    { id: 'lorelei', name: 'Lorelei', spriteId: 54 }
+// Liste des Avatars Pokémon HD (Official Artwork)
+const avatars = [
+    { id: 'pikachu', name: 'Pikachu', dexId: 25 },
+    { id: 'bulbasaur', name: 'Bulbizarre', dexId: 1 },
+    { id: 'charmander', name: 'Salamèche', dexId: 4 },
+    { id: 'squirtle', name: 'Carapuce', dexId: 7 },
+    { id: 'gengar', name: 'Ectoplasma', dexId: 94 },
+    { id: 'eevee', name: 'Évoli', dexId: 133 },
+    { id: 'snorlax', name: 'Ronflex', dexId: 143 },
+    { id: 'jigglypuff', name: 'Rondoudou', dexId: 39 },
+    { id: 'meowth', name: 'Miaouss', dexId: 52 },
+    { id: 'psyduck', name: 'Psykokwak', dexId: 54 },
+    { id: 'mewtwo', name: 'Mewtwo', dexId: 150 },
+    { id: 'mew', name: 'Mew', dexId: 151 }
 ];
 
-let selectedTrainer = trainers[0];
+let selectedAvatar = avatars[0];
 let myPlayerInfo = null;
 let currentGameCode = null;
 
-const getTrainerSprite = (t) => {
-    // Try local first, then remote
-    return `/trainers/${t.id}.png`;
+const getAvatarUrl = (dexId) => {
+    return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${dexId}.png`;
 };
 
 const screens = {
@@ -32,31 +32,28 @@ const screens = {
     final: document.getElementById('final-screen')
 };
 
-// Initialize Trainer Grid
+// Initialisation de la grille d'avatars
 const trainerGrid = document.getElementById('trainer-grid');
-trainers.forEach(t => {
+trainerGrid.innerHTML = ''; // Nettoyer
+avatars.forEach(av => {
     const div = document.createElement('div');
     div.className = 'trainer-option';
-    if (t.id === selectedTrainer.id) div.classList.add('selected');
+    if (av.id === selectedAvatar.id) div.classList.add('selected');
     
-    // Fallback to remote if local fails
-    const imgUrl = getTrainerSprite(t);
-    const remoteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/trainers/${t.spriteId}.png`;
-    
-    div.innerHTML = `<img src="${imgUrl}" onerror="this.src='${remoteUrl}'" alt="${t.name}">`;
-    div.onclick = () => selectTrainer(t, div);
+    div.innerHTML = `<img src="${getAvatarUrl(av.dexId)}" alt="${av.name}">`;
+    div.onclick = () => selectAvatar(av, div);
     trainerGrid.appendChild(div);
 });
 
-function selectTrainer(trainer, element) {
-    selectedTrainer = trainer;
+function selectAvatar(avatar, element) {
+    selectedAvatar = avatar;
     document.querySelectorAll('.trainer-option').forEach(el => el.classList.remove('selected'));
     element.classList.add('selected');
-    document.getElementById('selected-trainer-name').textContent = trainer.name;
+    document.getElementById('selected-trainer-name').textContent = avatar.name;
     checkForm();
 }
 
-// Form Validation
+// Validation du formulaire
 const pseudoInput = document.getElementById('pseudo-input');
 const codeInput = document.getElementById('code-input');
 const joinBtn = document.getElementById('join-btn');
@@ -71,11 +68,20 @@ function checkForm() {
     joinBtn.disabled = !(isPseudoValid && isCodeValid);
 }
 
-// Socket Actions
+// Actions Socket
 joinBtn.onclick = () => {
     const pseudo = pseudoInput.value.trim();
     const code = codeInput.value.trim();
-    socket.emit('join-game', { code, pseudo, trainer: selectedTrainer });
+    // On envoie l'objet adapté au serveur
+    socket.emit('join-game', { 
+        code, 
+        pseudo, 
+        trainer: { 
+            id: selectedAvatar.id, 
+            name: selectedAvatar.name, 
+            spriteId: selectedAvatar.dexId // On utilise dexId comme spriteId
+        } 
+    });
 };
 
 socket.on('joined-successfully', (data) => {
@@ -83,7 +89,8 @@ socket.on('joined-successfully', (data) => {
     currentGameCode = data.gameCode;
     showScreen('waiting');
     
-    document.getElementById('my-trainer-img').src = myPlayerInfo.trainerSprite;
+    // Mise à jour de l'image d'attente
+    document.getElementById('my-trainer-img').src = getAvatarUrl(selectedAvatar.dexId);
     document.getElementById('my-pseudo').textContent = myPlayerInfo.pseudo;
 });
 
@@ -98,7 +105,7 @@ socket.on('lobby-update', (data) => {
         if (p.id !== socket.id) {
             const div = document.createElement('div');
             div.className = 'other-player';
-            div.innerHTML = `<span>${p.pseudo} est là !</span>`;
+            div.innerHTML = `<span>${p.pseudo} a rejoint !</span>`;
             othersList.appendChild(div);
         }
     });
@@ -106,7 +113,7 @@ socket.on('lobby-update', (data) => {
 
 socket.on('game-started', () => {
     showScreen('game');
-    document.getElementById('stats-trainer').src = myPlayerInfo.trainerSprite;
+    document.getElementById('stats-trainer').src = getAvatarUrl(selectedAvatar.dexId);
 });
 
 socket.on('question', (data) => {
@@ -117,8 +124,6 @@ socket.on('question', (data) => {
     const btns = document.querySelectorAll('.answer-btn');
     btns.forEach((btn, i) => {
         btn.disabled = false;
-        // Update text if needed, kahoot style uses A, B, C, D
-        // But we could put the text directly
         btn.textContent = data.question.options[i] || '';
     });
 });
@@ -141,11 +146,11 @@ socket.on('question-results', (data) => {
     
     if (myResult.isCorrect) {
         box.className = 'feedback-box correct';
-        title.textContent = 'GOTCHA !';
+        title.textContent = 'EXCELLENT !';
         points.textContent = `+${myResult.pointsGained} pts`;
     } else {
         box.className = 'feedback-box wrong';
-        title.textContent = 'RATÉ...';
+        title.textContent = 'DOMMAGE...';
         points.textContent = '0 pt';
     }
     
@@ -155,7 +160,7 @@ socket.on('question-results', (data) => {
 socket.on('game-over', (data) => {
     showScreen('final');
     const myFinal = data.finalLeaderboard.find(r => r.id === socket.id);
-    document.getElementById('final-rank').textContent = `#${myFinal.position}`;
+    document.getElementById('final-rank').textContent = `${myFinal.position}${myFinal.position === 1 ? 'er' : 'ème'}`;
     document.getElementById('final-score').textContent = myFinal.score;
 });
 
@@ -174,7 +179,6 @@ document.querySelectorAll('.answer-btn').forEach(btn => {
             answer: answer 
         });
         
-        // Disable all buttons
         document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     };
 });
