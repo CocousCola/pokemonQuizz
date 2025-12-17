@@ -354,8 +354,12 @@ function showResultPopup(data) {
     const popup = popups.result;
     const sprite = document.getElementById('result-sprite');
     
-    // IMAGE SUPPRIMÉE (Hide completely as requested)
-    if (sprite) {
+    // IMAGE RESTAURÉE (Visible during reveal)
+    if (currentQuestion.pokemon.sprite) {
+        sprite.src = currentQuestion.pokemon.sprite;
+        sprite.classList.remove('hidden', 'blur', 'shadow', 'silhouette');
+        sprite.style.filter = 'none'; // Clear all filters for reveal
+    } else {
         sprite.classList.add('hidden');
     }
     
