@@ -218,6 +218,10 @@ socket.on('game-started', (data) => {
 
 socket.on('question', (data) => {
     console.log("New Question Received:", data);
+    
+    // Switch to question screen immediately
+    showScreen('question');
+    
     popups.result.classList.add('hidden');
     
     currentQuestion = data.question;
@@ -245,19 +249,19 @@ socket.on('question', (data) => {
     }
 
     const optionsGrid = document.getElementById('options-grid');
+    const textIndicator = document.getElementById('text-mode-indicator');
+    
     optionsGrid.innerHTML = '';
     
     if (currentQuestion.inputType === 'TEXT') {
-        document.getElementById('text-mode-indicator').classList.remove('hidden');
+        if(textIndicator) textIndicator.classList.remove('hidden');
         optionsGrid.classList.add('hidden');
     } else {
-        document.getElementById('text-mode-indicator').classList.add('hidden');
+        if(textIndicator) textIndicator.classList.add('hidden');
         optionsGrid.classList.remove('hidden');
         
-        // Dynamic grid based on options length
         currentQuestion.options.forEach((opt, i) => {
             const div = document.createElement('div');
-            // Add specific color class option-0, option-1 etc.
             div.className = `option-item option-${i}`;
             div.innerHTML = `${shapeIcons[i]} <span>${opt}</span>`;
             optionsGrid.appendChild(div);

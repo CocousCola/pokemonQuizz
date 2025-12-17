@@ -1,16 +1,21 @@
-Uncaught (in promise) TypeError: Cannot set properties of null (setting 'textContent')
-    at Socket.<anonymous> (host.js:53:55)
+Connecté au serveur
+host.js:220 New Question Received: Object
+host.js:254 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'classList')
+    at Socket.<anonymous> (host.js:254:55)
     at Socket.<anonymous> (index.js:136:20)
     at Socket.emitEvent (socket.js:553:20)
     at Socket.onevent (socket.js:540:18)
     at Socket.onpacket (socket.js:508:22)
     at Manager.<anonymous> (index.js:136:20)
     at manager.js:217:18Understand this error
-host.js:286 Uncaught (in promise) ReferenceError: getAvatarUrl is not defined
-    at host.js:286:28
-    at Array.forEach (<anonymous>)
-    at updateLeaderboard (host.js:282:17)
-    at Socket.<anonymous> (host.js:233:5)
+host.js:269 Results Received: Object
+host.js:305 Requesting Leaderboard...
+host.js:311 Leaderboard Received
+host.js:80 Updating Leaderboard with 1 players
+host.js:322 Triggering Next Question
+host.js:220 New Question Received: Object
+host.js:254 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'classList')
+    at Socket.<anonymous> (host.js:254:55)
     at Socket.<anonymous> (index.js:136:20)
     at Socket.emitEvent (socket.js:553:20)
     at Socket.onevent (socket.js:540:18)
