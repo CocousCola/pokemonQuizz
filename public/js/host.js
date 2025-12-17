@@ -47,9 +47,11 @@ function showScreen(id) {
 function startTimer() {
     timeLeft = 15;
     if (config.mode === 'SURVIVAL') timeLeft = 10;
-    if (config.mode === 'MARATHON') timeLeft = 20; // More time for typing
+    if (config.mode === 'MARATHON') timeLeft = 20;
     
     const bar = document.getElementById('timer-bar-fill');
+    const sprite = document.getElementById('pokemon-sprite');
+    
     if (!bar) return;
 
     bar.style.width = '100%';
@@ -63,6 +65,24 @@ function startTimer() {
         timeLeft -= 0.1;
         const pct = (timeLeft / totalTime) * 100;
         bar.style.width = `${pct}%`;
+        
+        // Progressive Reveal Logic for MARATHON
+        if (config.mode === 'MARATHON') {
+            sprite.classList.remove('hidden', 'blur', 'shadow', 'silhouette');
+            
+            if (timeLeft > 10) {
+                // Phase 1: Hidden (Numbers only)
+                sprite.classList.add('hidden');
+            } else if (timeLeft > 5) {
+                // Phase 2: Blur
+                sprite.classList.remove('hidden');
+                sprite.classList.add('blur');
+            } else {
+                // Phase 3: Shadow
+                sprite.classList.remove('hidden');
+                sprite.classList.add('shadow');
+            }
+        }
         
         if (timeLeft < 5) {
             bar.style.backgroundColor = 'var(--poke-red)';
