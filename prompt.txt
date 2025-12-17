@@ -1,50 +1,7 @@
-Prompt de Développement Web : Pokémon Quiz Engine v2
-Contexte : Refonte d'une application web de quiz multijoueur en temps réel. Stack visée : Style Retro CSS / GameBoy Generation 1.
-
-1. Logique Multijoueur & Feedback (Real-time)
-Affichage des Scores : À la fin de chaque question, générer une fenêtre "Pop-up" ou un insert dans le DOM affichant : la bonne réponse, le nom du gagnant, et son temps de réaction précis (ex: 1.24s).
-
-Validation visuelle : Lorsqu'un utilisateur soumet une réponse, son avatar ou son nom dans la liste des joueurs doit s'illuminer ou changer d'état (ex: une icône Pokéball apparaît à côté de son nom) pour confirmer que sa réponse est prise en compte.
-
-Capacité : S'assurer que le backend et l'interface peuvent gérer jusqu'à 10 joueurs (grille de joueurs adaptative).
-
-2. Configuration de la Session (Host Control)
-Dashboard Hôte : Créer un menu avant-match permettant à l'hôte de définir le nombre de questions par partie.
-
-Conditions d'arrêt : Le script de boucle de jeu doit inclure un check rigoureux : if (currentQuestion >= limit) { endGameState() }.
-
-Exception : Cette limite est désactivée pour le mode "151 Pokémon".
-
-3. Modes de Jeu (Catalogue de 6 modes)
-Implémenter les modes suivants avec une interface dédiée :
-
-Le Marathon des 151 : Les joueurs doivent taper les noms des 151 Pokémon dans l'ordre. L'interface doit afficher une grille de progression 151 cases qui se remplissent.
-
-Quiz Image Classique : Reconnaissance de sprites.
-
-L'Ombre Chinoise : Afficher uniquement la silhouette (filtre CSS brightness(0)).
-
-Maître des Types : Afficher un Pokémon, les joueurs doivent cliquer sur ses deux types le plus vite possible.
-
-Le Cri de Guerre : Jouer un son d'archive .wav, identifier le Pokémon.
-
-Survie (Sudden Death) : Le temps de réponse diminue de 10% à chaque bonne réponse.
-
-4. UI/UX : Direction Artistique "Génération 1"
-Framework CSS : Utiliser une esthétique "8-bit". Bordures noires épaisses, coins carrés, et police d'écriture Press Start 2P.
-
-Palette de couleurs : Nuances de gris, vert GameBoy et blanc cassé.
-
-Composants : * Boutons avec effet de pression "clic" rétro.
-
-Boîtes de dialogue avec le curseur clignotant.
-
-Animations de transition fluides simulant les transitions de combat Pokémon.
-
-Structure visuelle suggérée pour l'interface :
-Conseils pour la mise en œuvre technique :
-Websockets (Socket.io) : Indispensable pour que le "temps de réponse" soit calculé côté serveur et synchronisé pour les 10 joueurs.
-
-Assets : Utilise l'API PokeAPI pour récupérer les noms, types et sprites officiels de la G1.
-
-Performance : Pré-charge les images du prochain tour pour éviter les latences d'affichage.
+file:///opt/render/project/src/server/server.js:186
+SyntaxError: Unexpected end of input
+    at compileSourceTextModule (node:internal/modules/esm/utils:344:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:105:18)
+    at #translate (node:internal/modules/esm/loader:534:12)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:581:27)
+    at async ModuleJob._link (node:internal/modules/esm/module_job:116:19)
