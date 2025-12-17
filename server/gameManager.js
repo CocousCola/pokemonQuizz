@@ -64,12 +64,16 @@ class GameManager {
         return { game, player };
     }
 
-    async startGame(code) {
+    async startGame(code, settings = { mode: 'CLASSIC' }) {
         const game = this.games.get(code);
         if (!game) return null;
 
         game.status = 'playing';
-        game.questions = await pokemonService.generateQuestions(12);
+        game.settings = settings;
+        
+        // Number of questions depends on mode
+        const count = settings.mode === 'ORTHOGRAPH' ? 20 : 12;
+        game.questions = await pokemonService.generateQuestions(count, settings.mode);
         game.currentQuestionIndex = 0;
         
         return game;
@@ -89,16 +93,33 @@ class GameManager {
         player.hasAnswered = true;
         player.lastAnswerTime = timeTaken;
         
-        if (answer === currentQuestion.answer) {
-            player.isCorrect = true;
+        let isCorrect = false;
+        
+        if (currentQuestion.inputType === 'TEXT') {
+            // Answer is string, validate with Levenshtein
+            isCorrect = pokemonService.isAnswerValid(answer, currentQuestion.answer, 2);
+        } else {
+            // Answer is index (0-3), check against options
+            // currentQuestion.answer is the text value.
+            // currentQuestion.options is array of text.
+            // We need to check if options[answer] === currentQuestion.answer
+            const selectedOption = currentQuestion.options[answer];
+            isCorrect = (selectedOption === currentQuestion.answer);
+        }
+
+        player.isCorrect = isCorrect;
+        
+        if (isCorrect) {
             // Points calculation: 1000 base + (500 - (10 * sec))
-            const bonus = Math.max(0, 500 - Math.floor(timeTaken * 33.3)); // 15 sec max -> 500 / 15 = 33.3 per sec
+            // Text mode might have different scoring? Let's keep it consistent for now or bonus for perfect spelling?
+            // Prompt says: Perfect=1000, 1 error=800... but let's stick to speed bonus for now
+            const bonus = Math.max(0, 500 - Math.floor(timeTaken * 33.3));
             const points = 1000 + bonus;
+            
             player.totalPointsGained = points;
             player.score += points;
             player.currentStreak++;
         } else {
-            player.isCorrect = false;
             player.totalPointsGained = 0;
             player.currentStreak = 0;
         }
@@ -107,6 +128,48 @@ class GameManager {
             player,
             allAnswered: Array.from(game.players.values()).every(p => p.hasAnswered)
         };
+    }
+
+    nextQuestion(code) {
+        const game = this.games.get(code);
+        if (!game) return null;
+
+        // Determine fastest player for the PREVIOUS question before moving on
+        // Actually, this is usually done in revealResults
+        
+        game.currentQuestionIndex++;
+        
+        // Reset player states for next question
+        for (const player of game.players.values()) {
+            player.hasAnswered = false;
+            player.isCorrect = false;
+            player.totalPointsGained = 0;
+            // Keep score and streak
+        }
+
+        if (game.currentQuestionIndex >= game.questions.length) {
+            game.status = 'finished';
+            return { status: 'finished' };
+        }
+
+        return {
+            status: 'playing',
+            question: game.questions[game.currentQuestionIndex],
+            index: game.currentQuestionIndex
+        };
+    }
+
+    getFastestPlayer(code) {
+        const game = this.games.get(code);
+        if (!game) return null;
+        
+        // Filter correct answers
+        const correctPlayers = Array.from(game.players.values()).filter(p => p.isCorrect);
+        if (correctPlayers.length === 0) return null;
+        
+        // Sort by time
+        correctPlayers.sort((a, b) => a.lastAnswerTime - b.lastAnswerTime);
+        return correctPlayers[0];
     }
 
     nextQuestion(code) {

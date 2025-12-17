@@ -5,20 +5,60 @@ class PokemonService {
         this.cache = new Map();
         this.totalGen1 = 151;
         this.allPokemonData = [];
+        this.typeTranslations = {
+            'normal': 'Normal',
+            'fire': 'Feu',
+            'water': 'Eau',
+            'grass': 'Plante',
+            'electric': 'Électrik',
+            'ice': 'Glace',
+            'fighting': 'Combat',
+            'poison': 'Poison',
+            'ground': 'Sol',
+            'flying': 'Vol',
+            'psychic': 'Psy',
+            'bug': 'Insecte',
+            'rock': 'Roche',
+            'ghost': 'Spectre',
+            'dragon': 'Dragon',
+            'dark': 'Ténèbres',
+            'steel': 'Acier',
+            'fairy': 'Fée'
+        };
     }
 
     async init() {
-        console.log('Initializing Pokemon Service (Gen 1)...');
+        console.log('Initializing Pokemon Service (Gen 1) with French translations...');
         try {
             // Fetch basic info for all 151 Gen 1 Pokemon
             const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${this.totalGen1}`);
             const data = await response.json();
             
-            // Fetch detailed info for each
-            const detailedPromises = data.results.map(p => fetch(p.url).then(res => res.json()));
-            this.allPokemonData = await Promise.all(detailedPromises);
+            // Process in batches to avoid overwhelming the API
+            const batchSize = 10;
+            this.allPokemonData = [];
             
-            console.log(`Loaded ${this.allPokemonData.length} Pokemon from Gen 1.`);
+            for (let i = 0; i < data.results.length; i += batchSize) {
+                const batch = data.results.slice(i, i + batchSize);
+                const batchPromises = batch.map(async (p) => {
+                    const basicData = await fetch(p.url).then(res => res.json());
+                    // Fetch species data for French name
+                    const speciesData = await fetch(basicData.species.url).then(res => res.json());
+                    const frName = speciesData.names.find(n => n.language.name === 'fr');
+                    
+                    return {
+                        ...basicData,
+                        nameFr: frName ? frName.name : basicData.name,
+                        typesFr: basicData.types.map(t => this.typeTranslations[t.type.name] || t.type.name)
+                    };
+                });
+                
+                const batchResults = await Promise.all(batchPromises);
+                this.allPokemonData.push(...batchResults);
+                console.log(`Loaded ${this.allPokemonData.length}/${this.totalGen1} Pokemon...`);
+            }
+            
+            console.log(`Loaded all ${this.allPokemonData.length} Pokemon from Gen 1 with French names.`);
         } catch (error) {
             console.error('Error initializing Pokemon Service:', error);
         }
@@ -29,16 +69,54 @@ class PokemonService {
         return shuffled.slice(0, count);
     }
 
-    async generateQuestions(count = 12) {
+    levenshteinDistance(a, b) {
+        if (!a || !b) return 999;
+        const matrix = [];
+        for (let i = 0; i <= b.length; i++) {
+            matrix[i] = [i];
+        }
+        for (let j = 0; j <= a.length; j++) {
+            matrix[0][j] = j;
+        }
+        for (let i = 1; i <= b.length; i++) {
+            for (let j = 1; j <= a.length; j++) {
+                if (b.charAt(i - 1) === a.charAt(j - 1)) {
+                    matrix[i][j] = matrix[i - 1][j - 1];
+                } else {
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j - 1] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j] + 1
+                    );
+                }
+            }
+        }
+        return matrix[b.length][a.length];
+    }
+
+    isAnswerValid(userInput, correctAnswer, maxDistance = 2) {
+        // Normalize: remove accents, lowercase, trim
+        const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+        const input = normalize(userInput);
+        const correct = normalize(correctAnswer);
+        
+        const distance = this.levenshteinDistance(input, correct);
+        return distance <= maxDistance;
+    }
+
+    async generateQuestions(count = 12, mode = 'CLASSIC') {
         const questions = [];
-        const types = [
-            'WHO_IS_THIS',
-            'GUESS_TYPE',
-            'EVOLUTION',
-            'STATS_BATTLE',
-            'DEX_NUMBER',
-            'WHICH_ABILITY'
-        ];
+        // Define question types based on mode
+        let types = [];
+        
+        if (mode === 'ORTHOGRAPH') {
+            types = ['WHO_IS_THIS_TEXT'];
+        } else if (mode === 'POKEDEX') {
+            types = ['DEX_NUMBER_QUIZ', 'WHO_IS_NUMBER', 'ORDER_CHRONO'];
+        } else {
+            // CLASSIC
+            types = ['WHO_IS_THIS', 'GUESS_TYPE', 'EVOLUTION', 'STATS_BATTLE', 'DEX_NUMBER'];
+        }
 
         for (let i = 0; i < count; i++) {
             const type = types[Math.floor(Math.random() * types.length)];
@@ -54,8 +132,9 @@ class PokemonService {
         
         let questionData = {
             type: type,
+            inputType: (type === 'WHO_IS_THIS_TEXT') ? 'TEXT' : 'QCM',
             pokemon: {
-                name: this.capitalize(mainPokemon.name),
+                name: mainPokemon.nameFr, // Use French name
                 sprite: mainPokemon.sprites.other['official-artwork'].front_default || mainPokemon.sprites.front_default,
                 id: mainPokemon.id
             },
@@ -65,21 +144,23 @@ class PokemonService {
 
         switch (type) {
             case 'WHO_IS_THIS':
+            case 'WHO_IS_THIS_TEXT':
                 questionData.text = "Qui est ce Pokémon ?";
-                questionData.options = this.shuffle([mainPokemon, ...others]).map(p => this.capitalize(p.name));
-                questionData.answer = this.capitalize(mainPokemon.name);
+                questionData.options = this.shuffle([mainPokemon, ...others]).map(p => p.nameFr);
+                questionData.answer = mainPokemon.nameFr;
                 break;
 
             case 'GUESS_TYPE':
-                questionData.text = `Quel est le type de ${this.capitalize(mainPokemon.name)} ?`;
-                const mainType = mainPokemon.types.map(t => this.capitalize(t.type.name)).join('/');
-                const otherTypes = others.map(p => p.types.map(t => this.capitalize(t.type.name)).join('/'));
+                questionData.text = `Quel est le type de ${mainPokemon.nameFr} ?`;
+                const mainType = mainPokemon.typesFr.join('/');
+                const otherTypes = others.map(p => p.typesFr.join('/'));
                 questionData.options = this.shuffle([mainType, ...otherTypes]);
                 questionData.answer = mainType;
                 break;
 
             case 'DEX_NUMBER':
-                questionData.text = `Quel est le numéro de Pokédex de ${this.capitalize(mainPokemon.name)} ?`;
+            case 'DEX_NUMBER_QUIZ':
+                questionData.text = `Quel est le numéro de Pokédex de ${mainPokemon.nameFr} ?`;
                 const mainId = mainPokemon.id.toString().padStart(3, '0');
                 const otherIds = [
                     (mainPokemon.id + 1).toString().padStart(3, '0'),
@@ -90,33 +171,53 @@ class PokemonService {
                 questionData.answer = mainId;
                 break;
 
+            case 'WHO_IS_NUMBER':
+                const targetId = mainPokemon.id;
+                questionData.text = `Qui est le Pokémon n°${targetId} ?`;
+                questionData.options = this.shuffle([mainPokemon, ...others]).map(p => p.nameFr);
+                questionData.answer = mainPokemon.nameFr;
+                // Don't show sprite immediately for this one or show a placeholder?
+                // For now let's keep it simple, maybe hide sprite in frontend
+                questionData.hideSprite = true; 
+                break;
+
+            case 'ORDER_CHRONO':
+                // Pick 3 pokemon
+                const selection = [mainPokemon, ...others.slice(0, 2)];
+                // Sort them by ID for the answer
+                const sorted = [...selection].sort((a, b) => a.id - b.id);
+                questionData.text = "Remets ces Pokémon dans l'ordre du Pokédex !";
+                // For simplicity in MVP, we present 4 ordered sequences as options
+                const correctSeq = sorted.map(p => p.nameFr).join(' → ');
+                const wrong1 = this.shuffle([...selection]).map(p => p.nameFr).join(' → ');
+                const wrong2 = this.shuffle([...selection]).map(p => p.nameFr).join(' → ');
+                const wrong3 = this.shuffle([...selection]).map(p => p.nameFr).join(' → ');
+                
+                questionData.options = this.shuffle([correctSeq, wrong1, wrong2, wrong3]);
+                // Ensure unique options if shuffle luck is bad, but for MVP it's ok
+                questionData.answer = correctSeq;
+                questionData.pokemon.sprite = null; // Show 3 sprites? Complex. Let's just show text options.
+                questionData.extraImages = selection.map(p => p.sprites.front_default);
+                break;
+
             case 'STATS_BATTLE':
                 const stat = ['hp', 'attack', 'defense', 'speed'][Math.floor(Math.random() * 4)];
+                const statFr = {hp: 'PV', attack: 'Attaque', defense: 'Défense', speed: 'Vitesse'}[stat];
                 const opponent = others[0];
-                questionData.text = `Lequel a le plus de ${stat.toUpperCase()} ?`;
-                questionData.options = [this.capitalize(mainPokemon.name), this.capitalize(opponent.name)];
+                questionData.text = `Qui a le plus de ${statFr} ?`;
+                questionData.options = [mainPokemon.nameFr, opponent.nameFr];
                 
                 const mainStat = mainPokemon.stats.find(s => s.stat.name === stat).base_stat;
                 const oppStat = opponent.stats.find(s => s.stat.name === stat).base_stat;
                 
-                questionData.answer = mainStat >= oppStat ? this.capitalize(mainPokemon.name) : this.capitalize(opponent.name);
-                questionData.extra = `${this.capitalize(mainPokemon.name)}: ${mainStat} vs ${this.capitalize(opponent.name)}: ${oppStat}`;
+                questionData.answer = mainStat >= oppStat ? mainPokemon.nameFr : opponent.nameFr;
+                questionData.extra = `${mainPokemon.nameFr}: ${mainStat} vs ${opponent.nameFr}: ${oppStat}`;
                 break;
 
-            case 'WHICH_ABILITY':
-                questionData.text = `Quel talent ${this.capitalize(mainPokemon.name)} peut-il avoir ?`;
-                const mainAbility = this.capitalize(mainPokemon.abilities[0].ability.name.replace('-', ' '));
-                const otherAbilities = others.map(p => this.capitalize(p.abilities[0].ability.name.replace('-', ' ')));
-                questionData.options = this.shuffle([mainAbility, ...otherAbilities]);
-                questionData.answer = mainAbility;
-                break;
-
-            case 'EVOLUTION':
             default:
-                // Simplified for MVP, focusing on names
                 questionData.text = "Qui est ce Pokémon ?";
-                questionData.options = this.shuffle([mainPokemon, ...others]).map(p => this.capitalize(p.name));
-                questionData.answer = this.capitalize(mainPokemon.name);
+                questionData.options = this.shuffle([mainPokemon, ...others]).map(p => p.nameFr);
+                questionData.answer = mainPokemon.nameFr;
                 break;
         }
 

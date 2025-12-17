@@ -82,11 +82,13 @@ io.on('connection', (socket) => {
         console.log(`Player ${pseudo} joined game ${code}`);
     });
 
-    socket.on('start-game', async ({ code }) => {
-        const game = await gameManager.startGame(code);
+    socket.on('start-game', async ({ code, settings }) => {
+        // settings default to CLASSIC if not provided
+        const game = await gameManager.startGame(code, settings || { mode: 'CLASSIC' });
         if (game) {
             io.to(code).emit('game-started', {
-                totalQuestions: game.questions.length
+                totalQuestions: game.questions.length,
+                mode: game.settings.mode
             });
             sendNextQuestion(code);
         }
@@ -177,13 +179,16 @@ function revealResults(code) {
         isCorrect: p.isCorrect,
         pointsGained: p.totalPointsGained,
         score: p.score,
-        trainer: p.trainer
+        trainerSpriteId: p.trainerSpriteId
     }));
 
+    const fastest = gameManager.getFastestPlayer(code);
+    
     io.to(code).emit('question-results', {
         correctAnswer: currentQuestion.answer,
         extra: currentQuestion.extra || '',
-        playerResults
+        playerResults,
+        fastest: fastest ? { pseudo: fastest.pseudo, time: fastest.lastAnswerTime.toFixed(2) } : null
     });
 
     // Send updated leaderboard

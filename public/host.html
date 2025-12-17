@@ -38,6 +38,34 @@
             </div>
         </div>
 
+        <!-- Game Mode Selection Screen -->
+        <div id="mode-selection-screen" class="screen hidden">
+            <header>
+                <h1 class="retro-font">Choisis ton mode !</h1>
+            </header>
+            <div class="modes-container">
+                <div class="mode-card" onclick="selectMode('CLASSIC')">
+                    <div class="mode-icon">🎯</div>
+                    <h2 class="retro-font">Quiz Classique</h2>
+                    <p>Questions à choix multiples. Rapidité et connaissances !</p>
+                    <div class="difficulty">⭐⭐</div>
+                </div>
+                <div class="mode-card" onclick="selectMode('ORTHOGRAPH')">
+                    <div class="mode-icon">✍️</div>
+                    <h2 class="retro-font">Orthographe</h2>
+                    <p>Écris le nom du Pokémon sans faute (ou presque) !</p>
+                    <div class="difficulty">⭐⭐⭐⭐</div>
+                </div>
+                <!-- POKEDEX mode placeholder for future -->
+                <div class="mode-card disabled">
+                    <div class="mode-icon">🔢</div>
+                    <h2 class="retro-font">Ordre du Pokédex</h2>
+                    <p>Bientôt disponible...</p>
+                    <div class="difficulty">⭐⭐⭐</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Question Screen -->
         <div id="question-screen" class="screen hidden">
             <div class="question-header">
@@ -53,7 +81,11 @@
                     <img id="pokemon-sprite" src="" alt="Pokemon" class="silhouette">
                 </div>
                 <div id="options-grid" class="options-grid">
-                    <!-- Options shown as colors/names -->
+                    <!-- Options shown with shapes -->
+                </div>
+                <!-- Area for Text Input visualization (optional, maybe just show waiting status) -->
+                <div id="text-mode-indicator" class="hidden retro-font">
+                    ✍️ Les joueurs écrivent...
                 </div>
             </div>
 
@@ -65,6 +97,11 @@
         <!-- Results Screen (Reveal) -->
         <div id="results-screen" class="screen hidden">
             <h1 class="retro-font">Réponse !</h1>
+            
+            <div id="fastest-player-display" class="fastest-player hidden">
+                ⚡ Plus rapide : <span id="fastest-name">Sacha</span> (<span id="fastest-time">1.2s</span>)
+            </div>
+
             <div class="reveal-container">
                 <h2 id="correct-answer-text" class="retro-font">C'est Pikachu !</h2>
                 <div class="pokemon-reveal">

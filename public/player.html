@@ -51,29 +51,43 @@
         </div>
 
         <!-- Question Controls -->
-        <div id="game-screen" class="screen hidden">
-            <div class="game-header">
-                <div class="player-mini-stats">
-                    <img id="stats-trainer" src="">
-                    <span id="stats-score">0 pts</span>
+                    <div id="game-screen" class="screen hidden">
+                    <div class="game-header">
+                        <div class="player-mini-stats">
+                            <img id="stats-trainer" src="">
+                            <span id="stats-score">0 pts</span>
+                        </div>
+                        <div id="player-timer" class="timer-mini"></div>
+                    </div>
+        
+                    <!-- Boutons pour Quiz QCM (Formes géométriques) -->
+                    <div id="answer-buttons" class="answer-buttons">
+                        <button class="answer-btn btn-red" data-index="0">
+                            <svg viewBox="0 0 60 60" width="40" height="40"><circle cx="30" cy="30" r="25" fill="white"/></svg>
+                        </button>
+                        <button class="answer-btn btn-blue" data-index="1">
+                            <svg viewBox="0 0 60 60" width="40" height="40"><rect x="10" y="10" width="40" height="40" fill="white"/></svg>
+                        </button>
+                        <button class="answer-btn btn-green" data-index="2">
+                            <svg viewBox="0 0 60 60" width="40" height="40"><rect x="5" y="15" width="50" height="30" fill="white"/></svg>
+                        </button>
+                        <button class="answer-btn btn-yellow" data-index="3">
+                            <svg viewBox="0 0 60 60" width="40" height="40"><polygon points="30,5 35,20 50,23 40,35 43,50 30,42 17,50 20,35 10,23 25,20" fill="white"/></svg>
+                        </button>
+                    </div>
+        
+                    <!-- Input pour Mode Orthographe -->
+                    <div id="text-input-container" class="text-input-area hidden">
+                        <input type="text" id="answer-input" placeholder="Écris le nom du Pokémon..." autocomplete="off">
+                        <button id="validate-btn" class="btn">VALIDER</button>
+                    </div>
+        
+                    <div id="lock-in-msg" class="hidden">
+                        <h2 class="retro-font">Réponse enregistrée !</h2>
+                        <p>Regarde l'écran TV...</p>
+                    </div>
                 </div>
-                <div id="player-timer" class="timer-mini"></div>
-            </div>
-
-            <div id="answer-buttons" class="answer-buttons">
-                <button class="answer-btn btn-red" data-index="0">A</button>
-                <button class="answer-btn btn-blue" data-index="1">B</button>
-                <button class="answer-btn btn-green" data-index="2">C</button>
-                <button class="answer-btn btn-yellow" data-index="3">D</button>
-            </div>
-
-            <div id="lock-in-msg" class="hidden">
-                <h2 class="retro-font">Réponse enregistrée !</h2>
-                <p>Regarde l'écran TV...</p>
-            </div>
-        </div>
-
-        <!-- Feedback Screen -->
+                <!-- Feedback Screen -->
         <div id="feedback-screen" class="screen hidden">
             <div id="feedback-content" class="feedback-box">
                 <h1 id="feedback-title" class="retro-font">BIEN JOUÉ !</h1>

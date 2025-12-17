@@ -119,18 +119,60 @@ socket.on('game-started', () => {
 socket.on('question', (data) => {
     showScreen('game');
     document.getElementById('lock-in-msg').classList.add('hidden');
-    document.getElementById('answer-buttons').classList.remove('hidden');
     
-    const btns = document.querySelectorAll('.answer-btn');
-    btns.forEach((btn, i) => {
-        btn.disabled = false;
-        btn.textContent = data.question.options[i] || '';
-    });
+    const inputType = data.question.inputType || 'QCM'; // QCM or TEXT
+    
+    const qcmContainer = document.getElementById('answer-buttons');
+    const textContainer = document.getElementById('text-input-container');
+    const inputField = document.getElementById('answer-input');
+
+    if (inputType === 'TEXT') {
+        qcmContainer.classList.add('hidden');
+        textContainer.classList.remove('hidden');
+        inputField.value = '';
+        inputField.disabled = false;
+        document.getElementById('validate-btn').disabled = false;
+        inputField.focus();
+    } else {
+        qcmContainer.classList.remove('hidden');
+        textContainer.classList.add('hidden');
+        
+        const btns = document.querySelectorAll('.answer-btn');
+        btns.forEach((btn, i) => {
+            btn.disabled = false;
+            // On ne met plus de texte dans les boutons, juste les formes SVG
+        });
+    }
+});
+
+// Text Input Handling
+const validateBtn = document.getElementById('validate-btn');
+const inputField = document.getElementById('answer-input');
+
+validateBtn.onclick = () => {
+    const answer = inputField.value.trim();
+    if (answer) {
+        socket.emit('answer-question', { 
+            code: currentGameCode, 
+            answer: answer 
+        });
+        
+        inputField.disabled = true;
+        validateBtn.disabled = true;
+    }
+};
+
+// Also submit on Enter key
+inputField.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        validateBtn.click();
+    }
 });
 
 socket.on('player-answered', (data) => {
     if (data.playerId === socket.id) {
         document.getElementById('answer-buttons').classList.add('hidden');
+        document.getElementById('text-input-container').classList.add('hidden');
         document.getElementById('lock-in-msg').classList.remove('hidden');
     }
 });
@@ -173,12 +215,15 @@ function showScreen(screenId) {
 // Answer Handling
 document.querySelectorAll('.answer-btn').forEach(btn => {
     btn.onclick = () => {
-        const answer = btn.textContent;
+        // For QCM, we send the INDEX (0-3)
+        const index = parseInt(btn.getAttribute('data-index'));
+        
         socket.emit('answer-question', { 
             code: currentGameCode, 
-            answer: answer 
+            answer: index 
         });
         
+        // Disable all buttons
         document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
     };
 });

@@ -91,7 +91,7 @@ header h1 {
 .player-card img {
     width: 80px;
     height: 80px;
-    image-rendering: pixelated;
+    /* object-fit: contain; Remove this if pixelated is desired, but for HD it's ok */
     margin-right: 15px;
 }
 
@@ -122,6 +122,13 @@ header h1 {
     transition: width 0.1s linear;
 }
 
+.question-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
 .pokemon-display {
     height: 300px;
     display: flex;
@@ -144,6 +151,7 @@ header h1 {
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-top: 20px;
+    width: 100%;
 }
 
 .option-item {
@@ -151,14 +159,144 @@ header h1 {
     border: 4px solid var(--poke-black);
     font-family: var(--font-retro);
     font-size: 1.2rem;
-    text-align: center;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: white;
 }
 
-.option-0 { background-color: var(--poke-red); color: white; }
-.option-1 { background-color: var(--poke-blue); color: white; }
-.option-2 { background-color: var(--poke-green); color: white; }
-.option-3 { background-color: var(--poke-yellow); color: black; }
+.option-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
 
+.option-0 { background-color: var(--poke-red); }
+.option-1 { background-color: var(--poke-blue); }
+.option-2 { background-color: var(--poke-green); }
+.option-3 { background-color: var(--poke-yellow); color: black !important; }
+
+/* Mode Selection */
+.modes-container {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    margin-top: 50px;
+}
+
+.mode-card {
+    background: white;
+    border: 4px solid var(--poke-black);
+    padding: 30px;
+    width: 300px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.mode-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 0 rgba(0,0,0,0.2);
+}
+
+.mode-card.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mode-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+}
+
+.difficulty {
+    margin-top: 15px;
+    color: var(--poke-yellow);
+    text-shadow: 1px 1px black;
+}
+
+/* New Leaderboard Style */
+.leaderboard-container {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Espace vertical */
+    width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.leaderboard-item {
+    display: flex;
+    flex-direction: column; /* Stack pseudo on top of bar */
+    position: relative;
+    padding-left: 60px; /* Space for avatar */
+}
+
+.leaderboard-avatar {
+    position: absolute;
+    left: -20px;
+    top: -10px;
+    width: 70px;
+    height: 70px;
+    z-index: 2;
+    background: white;
+    border: 2px solid black;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.leaderboard-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 5px;
+}
+
+.leaderboard-pseudo {
+    font-family: var(--font-retro);
+    font-size: 14px;
+    color: #666;
+}
+
+.leaderboard-score-text {
+    font-family: var(--font-retro);
+    font-size: 32px;
+    color: var(--poke-black);
+}
+
+.leaderboard-bar-container {
+    height: 30px;
+    background: #eee;
+    border: 2px solid black;
+    border-radius: 15px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.leaderboard-bar {
+    height: 100%;
+    background: var(--poke-blue);
+    width: 0%; /* Animated via JS */
+    transition: width 1s ease-out;
+}
+
+/* Fastest Player */
+.fastest-player {
+    background: var(--poke-black);
+    color: var(--poke-yellow);
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-family: var(--font-retro);
+    font-size: 24px;
+    margin-bottom: 30px;
+    animation: pulse 0.5s infinite alternate;
+    border: 4px solid var(--poke-yellow);
+}
+
+/* Active Players Bottom */
 .active-players-status {
     position: fixed;
     bottom: 0;
@@ -179,7 +317,6 @@ header h1 {
 
 .mini-player-card img {
     width: 60px;
-    image-rendering: pixelated;
 }
 
 .mini-player-card.answered {
@@ -199,28 +336,6 @@ header h1 {
 .pokemon-reveal img {
     height: 350px;
 }
-
-/* Leaderboard */
-.leaderboard-container {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.leaderboard-item {
-    display: flex;
-    align-items: center;
-    background: white;
-    padding: 20px;
-    border: 4px solid var(--poke-black);
-    font-family: var(--font-retro);
-}
-
-.leaderboard-item .rank { width: 50px; font-size: 1.5rem; }
-.leaderboard-item img { width: 60px; margin: 0 20px; image-rendering: pixelated; }
-.leaderboard-item .name { flex: 1; }
-.leaderboard-item .score { font-size: 1.2rem; }
 
 /* Podium */
 .podium-container {
