@@ -273,6 +273,33 @@ function showScreen(id) {
     screens[id].classList.remove('hidden');
 }
 
+function updateLeaderboard(players) {
+    const list = document.getElementById('leaderboard-list');
+    const activePlayers = document.getElementById('active-players');
+    if (list) {
+        list.innerHTML = '';
+        const maxScore = Math.max(...players.map(p => p.score), 1);
+        players.forEach((p, i) => {
+            const div = document.createElement('div');
+            div.className = 'leaderboard-item slide-in';
+            div.style.animationDelay = `${i * 0.1}s`;
+            const imgUrl = getAvatarUrl(p.trainerSpriteId);
+            const barWidth = Math.max((p.score / maxScore) * 100, 5);
+            div.innerHTML = `
+                <img src="${imgUrl}" class="leaderboard-avatar">
+                <div class="leaderboard-info">
+                    <span class="leaderboard-pseudo">#${i+1} ${p.pseudo}</span>
+                    <span class="leaderboard-score-text">${p.score}</span>
+                </div>
+                <div class="leaderboard-bar-container">
+                    <div class="leaderboard-bar" style="width: ${barWidth}%; background-color: ${p.color}"></div>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+}
+
 function startTimer() {
     timeLeft = 15;
     if (config.mode === 'SURVIVAL') timeLeft = 10;

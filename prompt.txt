@@ -1,6 +1,16 @@
-Uncaught SyntaxError: Unexpected end of inputUnderstand this error
-12(index):49 Uncaught ReferenceError: updateRangeVal is not defined
-    at HTMLInputElement.oninput ((index):49:131)Understand this error
-(index):1  Failed to load resource: the server responded with a status of 502 ()Understand this error
-4(index):28 Uncaught ReferenceError: selectMode is not defined
-    at HTMLButtonElement.onclick ((index):28:100)
+Uncaught (in promise) TypeError: Cannot set properties of null (setting 'textContent')
+    at Socket.<anonymous> (host.js:53:55)
+    at Socket.<anonymous> (index.js:136:20)
+    at Socket.emitEvent (socket.js:553:20)
+    at Socket.onevent (socket.js:540:18)
+    at Socket.onpacket (socket.js:508:22)
+    at Manager.<anonymous> (index.js:136:20)
+    at manager.js:217:18Understand this error
+host.js:233 Uncaught (in promise) ReferenceError: updateLeaderboard is not defined
+    at Socket.<anonymous> (host.js:233:5)
+    at Socket.<anonymous> (index.js:136:20)
+    at Socket.emitEvent (socket.js:553:20)
+    at Socket.onevent (socket.js:540:18)
+    at Socket.onpacket (socket.js:508:22)
+    at Manager.<anonymous> (index.js:136:20)
+    at manager.js:217:18
