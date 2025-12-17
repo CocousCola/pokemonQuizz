@@ -6,7 +6,10 @@ Uncaught (in promise) TypeError: Cannot set properties of null (setting 'textCon
     at Socket.onpacket (socket.js:508:22)
     at Manager.<anonymous> (index.js:136:20)
     at manager.js:217:18Understand this error
-host.js:233 Uncaught (in promise) ReferenceError: updateLeaderboard is not defined
+host.js:286 Uncaught (in promise) ReferenceError: getAvatarUrl is not defined
+    at host.js:286:28
+    at Array.forEach (<anonymous>)
+    at updateLeaderboard (host.js:282:17)
     at Socket.<anonymous> (host.js:233:5)
     at Socket.<anonymous> (index.js:136:20)
     at Socket.emitEvent (socket.js:553:20)

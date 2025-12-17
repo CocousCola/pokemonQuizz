@@ -32,18 +32,30 @@ const screens = {
     final: document.getElementById('final-screen')
 };
 
+// SVG Icons
+const shapeIcons = [
+    `<svg viewBox="0 0 60 60" width="40" height="40"><circle cx="30" cy="30" r="25" fill="white"/></svg>`,
+    `<svg viewBox="0 0 60 60" width="40" height="40"><rect x="10" y="10" width="40" height="40" fill="white"/></svg>`,
+    `<svg viewBox="0 0 60 60" width="40" height="40"><rect x="5" y="15" width="50" height="30" fill="white"/></svg>`,
+    `<svg viewBox="0 0 60 60" width="40" height="40"><polygon points="30,5 35,20 50,23 40,35 43,50 30,42 17,50 20,35 10,23 25,20" fill="white"/></svg>`
+];
+
+const colors = ['red', 'blue', 'green', 'yellow'];
+
 // Initialisation de la grille d'avatars
 const trainerGrid = document.getElementById('trainer-grid');
-trainerGrid.innerHTML = ''; // Nettoyer
-avatars.forEach(av => {
-    const div = document.createElement('div');
-    div.className = 'trainer-option';
-    if (av.id === selectedAvatar.id) div.classList.add('selected');
-    
-    div.innerHTML = `<img src="${getAvatarUrl(av.dexId)}" alt="${av.name}">`;
-    div.onclick = () => selectAvatar(av, div);
-    trainerGrid.appendChild(div);
-});
+if (trainerGrid) {
+    trainerGrid.innerHTML = '';
+    avatars.forEach(av => {
+        const div = document.createElement('div');
+        div.className = 'trainer-option';
+        if (av.id === selectedAvatar.id) div.classList.add('selected');
+        
+        div.innerHTML = `<img src="${getAvatarUrl(av.dexId)}" alt="${av.name}">`;
+        div.onclick = () => selectAvatar(av, div);
+        trainerGrid.appendChild(div);
+    });
+}
 
 function selectAvatar(avatar, element) {
     selectedAvatar = avatar;
@@ -72,14 +84,13 @@ function checkForm() {
 joinBtn.onclick = () => {
     const pseudo = pseudoInput.value.trim();
     const code = codeInput.value.trim();
-    // On envoie l'objet adapté au serveur
     socket.emit('join-game', { 
         code, 
         pseudo, 
         trainer: { 
             id: selectedAvatar.id, 
             name: selectedAvatar.name, 
-            spriteId: selectedAvatar.dexId // On utilise dexId comme spriteId
+            spriteId: selectedAvatar.dexId 
         } 
     });
 };
@@ -89,7 +100,6 @@ socket.on('joined-successfully', (data) => {
     currentGameCode = data.gameCode;
     showScreen('waiting');
     
-    // Mise à jour de l'image d'attente
     document.getElementById('my-trainer-img').src = getAvatarUrl(selectedAvatar.dexId);
     document.getElementById('my-pseudo').textContent = myPlayerInfo.pseudo;
 });
@@ -120,7 +130,7 @@ socket.on('question', (data) => {
     showScreen('game');
     document.getElementById('lock-in-msg').classList.add('hidden');
     
-    const inputType = data.question.inputType || 'QCM'; // QCM or TEXT
+    const inputType = data.question.inputType || 'QCM';
     
     const qcmContainer = document.getElementById('answer-buttons');
     const textContainer = document.getElementById('text-input-container');
@@ -137,35 +147,33 @@ socket.on('question', (data) => {
         qcmContainer.classList.remove('hidden');
         textContainer.classList.add('hidden');
         
-        const btns = document.querySelectorAll('.answer-btn');
-        btns.forEach((btn, i) => {
-            btn.disabled = false;
-            // On ne met plus de texte dans les boutons, juste les formes SVG
-        });
-    }
-});
-
-// Text Input Handling
-const validateBtn = document.getElementById('validate-btn');
-const inputField = document.getElementById('answer-input');
-
-validateBtn.onclick = () => {
-    const answer = inputField.value.trim();
-    if (answer) {
-        socket.emit('answer-question', { 
-            code: currentGameCode, 
-            answer: answer 
-        });
+        // Generate Buttons Dynamically
+        qcmContainer.innerHTML = '';
+        const optionsCount = data.question.options.length;
         
-        inputField.disabled = true;
-        validateBtn.disabled = true;
-    }
-};
-
-// Also submit on Enter key
-inputField.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        validateBtn.click();
+        for (let i = 0; i < optionsCount; i++) {
+            const btn = document.createElement('button');
+            btn.className = `answer-btn btn-${colors[i]}`;
+            btn.setAttribute('data-index', i);
+            
+            // Special case for Yellow (Index 3)
+            let icon = shapeIcons[i];
+            if (i === 3) {
+                icon = icon.replace('fill="white"', 'fill="black"');
+            }
+            
+            btn.innerHTML = icon;
+            
+            btn.onclick = () => {
+                socket.emit('answer-question', { 
+                    code: currentGameCode, 
+                    answer: i 
+                });
+                Array.from(qcmContainer.children).forEach(b => b.disabled = true);
+            };
+            
+            qcmContainer.appendChild(btn);
+        }
     }
 });
 
@@ -206,24 +214,31 @@ socket.on('game-over', (data) => {
     document.getElementById('final-score').textContent = myFinal.score;
 });
 
-// UI Helpers
+// Text Input Handling
+const validateBtn = document.getElementById('validate-btn');
+const inputField = document.getElementById('answer-input');
+
+if (validateBtn && inputField) {
+    validateBtn.onclick = () => {
+        const answer = inputField.value.trim();
+        if (answer) {
+            socket.emit('answer-question', { 
+                code: currentGameCode, 
+                answer: answer 
+            });
+            inputField.disabled = true;
+            validateBtn.disabled = true;
+        }
+    };
+
+    inputField.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            validateBtn.click();
+        }
+    });
+}
+
 function showScreen(screenId) {
     Object.values(screens).forEach(s => s.classList.add('hidden'));
     screens[screenId].classList.remove('hidden');
 }
-
-// Answer Handling
-document.querySelectorAll('.answer-btn').forEach(btn => {
-    btn.onclick = () => {
-        // For QCM, we send the INDEX (0-3)
-        const index = parseInt(btn.getAttribute('data-index'));
-        
-        socket.emit('answer-question', { 
-            code: currentGameCode, 
-            answer: index 
-        });
-        
-        // Disable all buttons
-        document.querySelectorAll('.answer-btn').forEach(b => b.disabled = true);
-    };
-});
