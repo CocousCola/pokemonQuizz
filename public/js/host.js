@@ -5,6 +5,7 @@ let gameCode = null;
 let currentQuestion = null;
 let timerInterval = null;
 let timeLeft = 15;
+let nextQuestionTimeout = null;
 let config = {
     mode: 'CLASSIC',
     limit: 12
@@ -224,28 +225,22 @@ socket.on('leaderboard', (data) => {
     if (screens.gameOver.classList.contains('hidden') === false) return;
     
     showScreen('leaderboard');
-    const list = document.getElementById('leaderboard-list');
-    list.innerHTML = '';
+    updateLeaderboard(data.players);
     
-    data.players.forEach((p, i) => {
-        const div = document.createElement('div');
-        div.className = 'retro-box';
-        div.style.marginBottom = '10px';
-        div.style.display = 'flex';
-        div.style.justifyContent = 'space-between';
-        div.style.alignItems = 'center';
-        
-        div.innerHTML = `
-            <span>#${i+1} ${p.pseudo}</span>
-            <span>${p.score} PTS</span>
-        `;
-        list.appendChild(div);
-    });
-    
-    setTimeout(() => {
-        socket.emit('next-question', { code: gameCode });
-    }, 4000);
+    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+    nextQuestionTimeout = setTimeout(() => {
+        triggerNextQuestion();
+    }, 5000);
 });
+
+window.forceNext = function() {
+    if (nextQuestionTimeout) clearTimeout(nextQuestionTimeout);
+    triggerNextQuestion();
+};
+
+function triggerNextQuestion() {
+    socket.emit('next-question', { code: gameCode });
+}
 
 socket.on('game-over', (data) => {
     showScreen('gameOver');
