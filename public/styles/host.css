@@ -200,11 +200,11 @@ input[type=range]::-webkit-slider-thumb {
     font-weight: bold;
 }
 
-/* Couleurs spécifiques pour les options - FORCÉES */
-.option-0 { background-color: var(--poke-red) !important; color: white !important; }
-.option-1 { background-color: var(--poke-blue) !important; color: white !important; }
-.option-2 { background-color: var(--poke-green) !important; color: white !important; }
-.option-3 { background-color: var(--poke-yellow) !important; color: black !important; text-shadow: none !important; }
+/* Couleurs spécifiques pour les options - ULTRA FORCÉES */
+.option-item.option-0 { background-color: #ff3a3a !important; color: white !important; }
+.option-item.option-1 { background-color: #3a86ff !important; color: white !important; }
+.option-item.option-2 { background-color: #4CAF50 !important; color: white !important; } /* Vert plus vif */
+.option-item.option-3 { background-color: #FFD700 !important; color: black !important; text-shadow: none !important; }
 
 .option-icon {
     width: 40px;
@@ -212,12 +212,7 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 .option-icon path, .option-icon circle, .option-icon rect, .option-icon polygon {
-    fill: white; /* Icônes blanches par défaut */
-}
-
-/* Cas spécial Jaune : Icône noire */
-.option-3 .option-icon path, .option-3 .option-icon circle, .option-3 .option-icon rect, .option-3 .option-icon polygon {
-    fill: black;
+    fill: currentColor; /* Utilise la couleur du texte parent */
 }
 
 /* Result Popup */
@@ -345,24 +340,113 @@ input[type=range]::-webkit-slider-thumb {
 }
 
 /* Podium */
+
 .podium-container {
+
     display: flex;
+
     justify-content: center;
+
     align-items: flex-end;
+
     gap: 20px;
-    flex: 1;
+
+    margin: 40px 0;
+
 }
+
+
 
 .podium-place {
+
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
+
     background: white;
+
     border: 4px solid var(--gb-darkest);
+
     padding: 20px;
-    width: 200px;
+
+    width: 250px;
+
 }
 
-.place-1 { height: 400px; order: 2; border-color: gold; }
-.place-2 { height: 300px; order: 1; border-color: silver; }
-.place-3 { height: 250px; order: 3; border-color: #cd7f32; }
+
+
+.podium-place img {
+
+    width: 150px; /* Taille réduite */
+
+    height: 150px;
+
+    object-fit: contain;
+
+    margin: 15px 0;
+
+}
+
+
+
+.place-1 { height: 450px; order: 2; border-color: #FFD700; border-width: 8px; }
+
+.place-2 { height: 350px; order: 1; border-color: #C0C0C0; }
+
+.place-3 { height: 300px; order: 3; border-color: #CD7F32; }
+
+
+
+/* Game Over Layout */
+
+.game-over-content {
+
+    height: 100%;
+
+    width: 100%;
+
+}
+
+
+
+.game-over-box {
+
+    width: 90%;
+
+    max-width: 1100px;
+
+    text-align: center;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+}
+
+
+
+.action-footer {
+
+    margin-top: 30px;
+
+    width: 100%;
+
+}
+
+
+
+.action-footer .large-btn {
+
+    font-size: 2rem;
+
+    padding: 25px 60px;
+
+    background-color: var(--poke-red);
+
+    color: white;
+
+}

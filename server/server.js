@@ -103,9 +103,8 @@ io.on('connection', (socket) => {
                 pseudo: player.pseudo 
             });
 
-            if (allAnswered) {
-                revealResults(code);
-            }
+            // REMOVED: if (allAnswered) revealResults(code);
+            // We wait for the server-side timer to expire for suspense
         }
     });
 

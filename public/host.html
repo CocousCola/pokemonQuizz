@@ -137,10 +137,14 @@
 
         <!-- Game Over Screen -->
         <div id="game-over-screen" class="screen hidden">
-            <div class="retro-box center-box">
-                <h1>FIN DE PARTIE</h1>
-                <div id="final-podium"></div>
-                <button onclick="location.reload()" class="btn">RETOUR MENU</button>
+            <div class="game-over-content flex-center">
+                <div class="retro-box game-over-box">
+                    <h1 class="retro-font" style="font-size: 3rem; margin-bottom: 20px;">FIN DE PARTIE</h1>
+                    <div id="final-podium" class="podium-container"></div>
+                    <div class="action-footer">
+                        <button onclick="location.reload()" class="btn large-btn blink">RETOUR AU MENU</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
