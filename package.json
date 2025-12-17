@@ -1,0 +1,16 @@
+{
+  "name": "pokemon-quiz-battle",
+  "version": "1.0.0",
+  "description": "Quiz Pokémon local type Kahoot pour 2-4 joueurs sur WiFi",
+  "main": "server/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "node-fetch": "^3.3.2"
+  }
+}

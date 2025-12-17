@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Quiz - Arène TV</title>
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/host.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Lobby Screen -->
+        <div id="lobby-screen" class="screen">
+            <header>
+                <h1 class="retro-font">Arène Pokémon</h1>
+            </header>
+            
+            <div class="lobby-content">
+                <div class="join-info pixel-border">
+                    <h2>Rejoignez l'Arène !</h2>
+                    <div id="qrcode" class="qrcode-container"></div>
+                    <p id="player-url" class="url-text"></p>
+                    <div class="game-code-container">
+                        <span>CODE DE LA PARTIE :</span>
+                        <h1 id="display-game-code" class="retro-font">----</h1>
+                    </div>
+                </div>
+
+                <div class="players-list-container">
+                    <h3 class="retro-font">Dresseurs Prêts (<span id="player-count">0</span>/4)</h3>
+                    <div id="players-list" class="players-grid">
+                        <!-- Players will appear here -->
+                    </div>
+                    <button id="start-btn" class="btn hidden">Démarrer l'Arène</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Screen -->
+        <div id="question-screen" class="screen hidden">
+            <div class="question-header">
+                <div class="question-count retro-font">Question <span id="current-q">1</span>/12</div>
+                <div class="timer-container">
+                    <div id="timer-bar"></div>
+                </div>
+            </div>
+
+            <div class="question-content">
+                <h2 id="question-text" class="retro-font">Qui est ce Pokémon ?</h2>
+                <div class="pokemon-display">
+                    <img id="pokemon-sprite" src="" alt="Pokemon" class="silhouette">
+                </div>
+                <div id="options-grid" class="options-grid">
+                    <!-- Options shown as colors/names -->
+                </div>
+            </div>
+
+            <div class="active-players-status" id="active-players">
+                <!-- Mini cards for players -->
+            </div>
+        </div>
+
+        <!-- Results Screen (Reveal) -->
+        <div id="results-screen" class="screen hidden">
+            <h1 class="retro-font">Réponse !</h1>
+            <div class="reveal-container">
+                <h2 id="correct-answer-text" class="retro-font">C'est Pikachu !</h2>
+                <div class="pokemon-reveal">
+                    <img id="reveal-sprite" src="" alt="Pokemon">
+                </div>
+                <p id="extra-info"></p>
+            </div>
+            <div id="points-summary" class="points-grid">
+                <!-- Points gained this round -->
+            </div>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div id="leaderboard-screen" class="screen hidden">
+            <h1 class="retro-font">Classement</h1>
+            <div id="leaderboard-list" class="leaderboard-container">
+                <!-- Leaderboard entries -->
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen hidden">
+            <h1 class="retro-font">Fin du Combat !</h1>
+            <div class="podium-container" id="final-podium">
+                <!-- Final podium -->
+            </div>
+            <button id="restart-btn" class="btn">Nouvelle Arène</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/host.js"></script>
+</body>
+</html>

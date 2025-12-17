@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pokémon Quiz - Joueur</title>
+    <link rel="stylesheet" href="styles/common.css">
+    <link rel="stylesheet" href="styles/player.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Join Screen -->
+        <div id="join-screen" class="screen">
+            <header>
+                <h2 class="retro-font">Nouveau Dresseur</h2>
+            </header>
+            
+            <div class="trainer-selection">
+                <p>Choisis ton avatar :</p>
+                <div id="trainer-grid" class="trainer-grid">
+                    <!-- 12 trainers will be injected here -->
+                </div>
+                <div id="selected-trainer-name" class="retro-font">Red</div>
+            </div>
+
+            <div class="form-container">
+                <input type="text" id="pseudo-input" placeholder="Pseudo (max 12)" maxlength="12" class="pixel-border">
+                <input type="number" id="code-input" placeholder="Code à 4 chiffres" maxlength="4" class="pixel-border">
+                <button id="join-btn" class="btn" disabled>Rejoindre l'Arène</button>
+            </div>
+        </div>
+
+        <!-- Waiting Lobby -->
+        <div id="waiting-screen" class="screen hidden">
+            <h2 class="retro-font">Dans l'Arène</h2>
+            <div class="waiting-content">
+                <div class="player-info">
+                    <img id="my-trainer-img" src="" alt="">
+                    <h3 id="my-pseudo"></h3>
+                </div>
+                <div class="status-msg">
+                    <p>En attente du Professeur Chen...</p>
+                    <div class="pokeball-loader">
+                        <div class="pokeball"></div>
+                    </div>
+                </div>
+                <div id="others-list" class="others-list">
+                    <!-- Other players -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Question Controls -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-header">
+                <div class="player-mini-stats">
+                    <img id="stats-trainer" src="">
+                    <span id="stats-score">0 pts</span>
+                </div>
+                <div id="player-timer" class="timer-mini"></div>
+            </div>
+
+            <div id="answer-buttons" class="answer-buttons">
+                <button class="answer-btn btn-red" data-index="0">A</button>
+                <button class="answer-btn btn-blue" data-index="1">B</button>
+                <button class="answer-btn btn-green" data-index="2">C</button>
+                <button class="answer-btn btn-yellow" data-index="3">D</button>
+            </div>
+
+            <div id="lock-in-msg" class="hidden">
+                <h2 class="retro-font">Réponse enregistrée !</h2>
+                <p>Regarde l'écran TV...</p>
+            </div>
+        </div>
+
+        <!-- Feedback Screen -->
+        <div id="feedback-screen" class="screen hidden">
+            <div id="feedback-content" class="feedback-box">
+                <h1 id="feedback-title" class="retro-font">BIEN JOUÉ !</h1>
+                <div id="feedback-animation"></div>
+                <p id="feedback-points">+0 pts</p>
+            </div>
+        </div>
+
+        <!-- Final Screen -->
+        <div id="final-screen" class="screen hidden">
+            <h1 class="retro-font">BRAVO !</h1>
+            <div class="final-stats">
+                <p>Position : <span id="final-rank">#1</span></p>
+                <p>Score : <span id="final-score">0</span> pts</p>
+            </div>
+            <button onclick="location.reload()" class="btn">Rejouer</button>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/player.js"></script>
+</body>
+</html>
