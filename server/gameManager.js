@@ -3,7 +3,7 @@ import pokemonService from './pokemonService.js';
 class GameManager {
     constructor() {
         this.games = new Map();
-        this.playerColors = ['#FF0000', '#3B4CCA', '#8BAC0F', '#FFDE00']; // Rouge, Bleu, Vert, Jaune
+        this.playerColors = ['#FF0000', '#3B4CCA', '#8BAC0F', '#FFDE00', '#CC0000', '#B3A125', '#306230', '#0F380F', '#FFFFFF', '#555555'];
     }
 
     createGame(hostSocketId) {
@@ -21,7 +21,7 @@ class GameManager {
             questions: [],
             questionStartTime: null,
             timer: null,
-            settings: { mode: 'CLASSIC', limit: 12 } // Defaults
+            settings: { mode: 'CLASSIC', limit: 12 }
         };
 
         this.games.set(code, game);
@@ -36,9 +36,13 @@ class GameManager {
         const game = this.games.get(code);
         if (!game) return { error: "Cette arène n'existe pas" };
         if (game.status !== 'lobby') return { error: "Le combat a déjà commencé !" };
-        if (game.players.size >= 10) return { error: "Arène complète ! (10/10 dresseurs)" }; // Max 10 players
+        if (game.players.size >= 10) return { error: "Arène complète ! (10/10 dresseurs)" };
         
-        // ... (rest of checks)
+        for (const p of game.players.values()) {
+            if (p.pseudo.toLowerCase() === pseudo.toLowerCase()) {
+                return { error: "Ce nom de dresseur est déjà pris" };
+            }
+        }
 
         const player = {
             id: socketId,
@@ -47,8 +51,7 @@ class GameManager {
             trainerName: trainer.name,
             trainerSprite: `/trainers/${trainer.id}.png`,
             trainerSpriteId: trainer.spriteId,
-            // Generate color based on index or random from a larger palette
-            color: this.getPlayerColor(game.players.size),
+            color: this.playerColors[game.players.size % this.playerColors.length],
             score: 0,
             hasAnswered: false,
             lastAnswerTime: null,
@@ -61,25 +64,12 @@ class GameManager {
         return { game, player };
     }
 
-    getPlayerColor(index) {
-        const colors = [
-            '#FF0000', '#3B4CCA', '#8BAC0F', '#FFDE00', 
-            '#CC0000', '#B3A125', '#306230', '#0F380F',
-            '#FFFFFF', '#555555'
-        ];
-        return colors[index % colors.length];
-    }
-
     async startGame(code, settings) {
         const game = this.games.get(code);
         if (!game) return null;
 
         game.status = 'playing';
-        game.settings = { ...game.settings, ...settings }; // Merge settings
-        
-        // Handle Marathon Mode or Survival
-        let count = game.settings.limit || 12;
-        if (game.settings.mode === 'MARATHON') count = 151;
+        game.settings = { ...game.settings, ...settings };
         
         // Handle Marathon Mode or Survival
         let count = game.settings.limit || 12;
@@ -91,12 +81,12 @@ class GameManager {
         } else if (game.settings.mode === 'SURVIVAL') {
             timeLimit = 10;
         } else if (game.settings.mode === 'ORTHOGRAPH') {
-            timeLimit = 20; // More time for typing
+            timeLimit = 20;
         }
         
         game.questions = await pokemonService.generateQuestions(count, game.settings.mode);
         game.currentQuestionIndex = -1;
-        game.timeLimit = timeLimit; // Store for server.js
+        game.timeLimit = timeLimit;
         
         return game;
     }
@@ -118,13 +108,8 @@ class GameManager {
         let isCorrect = false;
         
         if (currentQuestion.inputType === 'TEXT') {
-            // Answer is string, validate with Levenshtein
             isCorrect = pokemonService.isAnswerValid(answer, currentQuestion.answer, 2);
         } else {
-            // Answer is index (0-3), check against options
-            // currentQuestion.answer is the text value.
-            // currentQuestion.options is array of text.
-            // We need to check if options[answer] === currentQuestion.answer
             const selectedOption = currentQuestion.options[answer];
             isCorrect = (selectedOption === currentQuestion.answer);
         }
@@ -132,7 +117,6 @@ class GameManager {
         player.isCorrect = isCorrect;
         
         if (isCorrect) {
-            // Points calculation: 1000 base + (500 - (10 * sec))
             const bonus = Math.max(0, 500 - Math.floor(timeTaken * 33.3));
             const points = 1000 + bonus;
             
@@ -146,7 +130,7 @@ class GameManager {
 
         return {
             player,
-            allAnswered: false // FORCE WAIT FOR TIMER (Suspense !)
+            allAnswered: false // FORCE WAIT FOR TIMER
         };
     }
 
@@ -154,17 +138,12 @@ class GameManager {
         const game = this.games.get(code);
         if (!game) return null;
 
-        // Determine fastest player for the PREVIOUS question before moving on
-        // Actually, this is usually done in revealResults
-        
         game.currentQuestionIndex++;
         
-        // Reset player states for next question
         for (const player of game.players.values()) {
             player.hasAnswered = false;
             player.isCorrect = false;
             player.totalPointsGained = 0;
-            // Keep score and streak
         }
 
         if (game.currentQuestionIndex >= game.questions.length) {
@@ -183,38 +162,11 @@ class GameManager {
         const game = this.games.get(code);
         if (!game) return null;
         
-        // Filter correct answers
         const correctPlayers = Array.from(game.players.values()).filter(p => p.isCorrect);
         if (correctPlayers.length === 0) return null;
         
-        // Sort by time
         correctPlayers.sort((a, b) => a.lastAnswerTime - b.lastAnswerTime);
         return correctPlayers[0];
-    }
-
-    nextQuestion(code) {
-        const game = this.games.get(code);
-        if (!game) return null;
-
-        game.currentQuestionIndex++;
-        
-        // Reset player states for next question
-        for (const player of game.players.values()) {
-            player.hasAnswered = false;
-            player.isCorrect = false;
-            player.totalPointsGained = 0;
-        }
-
-        if (game.currentQuestionIndex >= game.questions.length) {
-            game.status = 'finished';
-            return { status: 'finished' };
-        }
-
-        return {
-            status: 'playing',
-            question: game.questions[game.currentQuestionIndex],
-            index: game.currentQuestionIndex
-        };
     }
 
     removePlayer(socketId) {

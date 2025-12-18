@@ -1,24 +1,9 @@
-Connecté au serveur
-host.js:220 New Question Received: Object
-host.js:254 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'classList')
-    at Socket.<anonymous> (host.js:254:55)
-    at Socket.<anonymous> (index.js:136:20)
-    at Socket.emitEvent (socket.js:553:20)
-    at Socket.onevent (socket.js:540:18)
-    at Socket.onpacket (socket.js:508:22)
-    at Manager.<anonymous> (index.js:136:20)
-    at manager.js:217:18Understand this error
-host.js:269 Results Received: Object
-host.js:305 Requesting Leaderboard...
-host.js:311 Leaderboard Received
-host.js:80 Updating Leaderboard with 1 players
-host.js:322 Triggering Next Question
-host.js:220 New Question Received: Object
-host.js:254 Uncaught (in promise) TypeError: Cannot read properties of null (reading 'classList')
-    at Socket.<anonymous> (host.js:254:55)
-    at Socket.<anonymous> (index.js:136:20)
-    at Socket.emitEvent (socket.js:553:20)
-    at Socket.onevent (socket.js:540:18)
-    at Socket.onpacket (socket.js:508:22)
-    at Manager.<anonymous> (index.js:136:20)
-    at manager.js:217:18
+file:///opt/render/project/src/server/gameManager.js:85
+        let count = game.settings.limit || 12;
+            ^
+SyntaxError: Identifier 'count' has already been declared
+    at compileSourceTextModule (node:internal/modules/esm/utils:344:16)
+    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:105:18)
+    at #translate (node:internal/modules/esm/loader:534:12)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:581:27)
+Node.js v22.16.0
