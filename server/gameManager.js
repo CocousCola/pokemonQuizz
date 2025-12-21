@@ -128,9 +128,18 @@ class GameManager {
             player.currentStreak = 0;
         }
 
+        // Check if all players have answered
+        let allAnswered = true;
+        for (const p of game.players.values()) {
+            if (!p.hasAnswered) {
+                allAnswered = false;
+                break;
+            }
+        }
+
         return {
             player,
-            allAnswered: false // FORCE WAIT FOR TIMER
+            allAnswered
         };
     }
 

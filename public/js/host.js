@@ -337,17 +337,14 @@ socket.on('player-answered', (data) => {
 });
 
 socket.on('question-results', (data) => {
-    // FORCE SUSPENSE: Wait for visual timer to finish if it hasn't
-    const remainingTime = Math.max(0, timeLeft * 1000); // ms
+    // Show results immediately (server controls timing)
+    stopTimer();
     
     // Ensure bar goes to 0 visually
     const bar = document.getElementById('timer-bar-fill');
     if(bar) bar.style.width = '0%';
 
-    setTimeout(() => {
-        stopTimer();
-        showResultPopup(data);
-    }, remainingTime);
+    showResultPopup(data);
 });
 
 function showResultPopup(data) {
