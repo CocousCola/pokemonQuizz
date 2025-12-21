@@ -77,7 +77,7 @@ class GameManager {
 
         if (game.settings.mode === 'MARATHON') {
             count = 151;
-            timeLimit = 20;
+            timeLimit = 30;
         } else if (game.settings.mode === 'SURVIVAL') {
             timeLimit = 10;
         } else if (game.settings.mode === 'ORTHOGRAPH') {
