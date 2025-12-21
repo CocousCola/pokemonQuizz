@@ -266,17 +266,17 @@ input[type=range]::-webkit-slider-thumb {
 
 .winner-box {
     background: var(--gb-dark); /* Vert foncé */
-    color: white !important;    /* Blanc forcé */
+    color: black !important;    
     padding: 20px;
     border: 4px solid var(--gb-darkest);
     font-size: 1.2rem;
     margin-top: 20px;
     border-radius: 8px;
-    text-shadow: 1px 1px 0 black;
+    /* text-shadow: 1px 1px 0 black; REMOVED for black text */
 }
 
 .winner-box p, .winner-box span {
-    color: white !important;
+    color: black !important;
 }
 
 /* Rank Indicators */
