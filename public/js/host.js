@@ -66,23 +66,12 @@ function startTimer() {
         const pct = (timeLeft / totalTime) * 100;
         bar.style.width = `${pct}%`;
         
-        // Progressive Reveal Logic for MARATHON
+        // Progressive Reveal Logic for MARATHON - REMOVED per request
+        /*
         if (config.mode === 'MARATHON') {
-            sprite.classList.remove('hidden', 'blur', 'shadow', 'silhouette');
-            
-            if (timeLeft > 10) {
-                // Phase 1: Hidden (Numbers only)
-                sprite.classList.add('hidden');
-            } else if (timeLeft > 5) {
-                // Phase 2: Blur
-                sprite.classList.remove('hidden');
-                sprite.classList.add('blur');
-            } else {
-                // Phase 3: Shadow
-                sprite.classList.remove('hidden');
-                sprite.classList.add('shadow');
-            }
+             // Logic removed to keep image hidden/placeholder
         }
+        */
         
         if (timeLeft < 5) {
             bar.style.backgroundColor = 'var(--poke-red)';
@@ -292,27 +281,47 @@ socket.on('question', (data) => {
         sprite.classList.add('hidden');
     } else {
         sprite.classList.remove('hidden');
-        sprite.src = currentQuestion.pokemon.sprite;
         
-        // Apply Visual Effects
-        if (currentQuestion.forceShadow || config.mode === 'SHADOW') {
-            sprite.classList.add('shadow');
-        } 
-        if (currentQuestion.forceBlur) {
-            sprite.classList.add('blur');
-        }
-        if (currentQuestion.type.includes('WHO_IS') && currentQuestion.inputType !== 'TEXT') {
-            sprite.classList.add('shadow'); // Classic WHO IS gets shadow
+        if (config.mode === 'MARATHON') {
+             sprite.src = "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png";
+             sprite.style.filter = 'none';
+        } else {
+             sprite.src = currentQuestion.pokemon.sprite;
+             
+            // Apply Visual Effects
+            if (currentQuestion.forceShadow || config.mode === 'SHADOW') {
+                sprite.classList.add('shadow');
+            } 
+            if (currentQuestion.forceBlur) {
+                sprite.classList.add('blur');
+            }
+            if (currentQuestion.type.includes('WHO_IS') && currentQuestion.inputType !== 'TEXT') {
+                sprite.classList.add('shadow'); // Classic WHO IS gets shadow
+            }
         }
     }
 
     const optionsGrid = document.getElementById('options-grid');
     const textIndicator = document.getElementById('text-mode-indicator');
+    const textPlayers = document.getElementById('text-input-players');
     
     optionsGrid.innerHTML = '';
     
     if (currentQuestion.inputType === 'TEXT') {
-        if(textIndicator) textIndicator.classList.remove('hidden');
+        if(textIndicator) {
+            textIndicator.classList.remove('hidden');
+            if (textPlayers) {
+                 textPlayers.innerHTML = '';
+                 allPlayers.forEach(p => {
+                     const div = document.createElement('div');
+                     div.className = 'mini-player-pill';
+                     div.setAttribute('data-id', p.id);
+                     const imgUrl = getAvatarUrl(p.trainerSpriteId);
+                     div.innerHTML = `<img src="${imgUrl}"> <span>${p.pseudo}</span>`;
+                     textPlayers.appendChild(div);
+                 });
+             }
+        }
         optionsGrid.classList.add('hidden');
     } else {
         if(textIndicator) textIndicator.classList.add('hidden');
@@ -333,6 +342,12 @@ socket.on('player-answered', (data) => {
         playerCard.classList.add('answered');
         const img = playerCard.querySelector('img');
         if(img) img.style.opacity = '0.5';
+    }
+    
+    // New logic for text mode players
+    const textPlayerPill = document.querySelector(`.mini-player-pill[data-id="${data.playerId}"]`);
+    if (textPlayerPill) {
+        textPlayerPill.classList.add('answered-green');
     }
 });
 
