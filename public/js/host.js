@@ -339,6 +339,17 @@ socket.on('question', (data) => {
     document.getElementById('question-text').textContent = currentQuestion.text;
     const sprite = document.getElementById('pokemon-sprite');
     
+    // Audio Handling (Cries)
+    const cryPlayer = document.getElementById('cry-player');
+    if (cryPlayer) {
+        cryPlayer.pause();
+        if (currentQuestion.audio) {
+            cryPlayer.src = currentQuestion.audio;
+            cryPlayer.volume = 1.0;
+            cryPlayer.play().catch(e => console.log("Audio play failed:", e));
+        }
+    }
+
     // Reset filters
     sprite.className = 'pixel-art'; // Base class
     sprite.style.filter = '';
@@ -431,6 +442,10 @@ socket.on('question-results', (data) => {
 function showResultPopup(data) {
     const popup = popups.result;
     const sprite = document.getElementById('result-sprite');
+    
+    // Stop Cry Audio if playing
+    const cryPlayer = document.getElementById('cry-player');
+    if (cryPlayer) cryPlayer.pause();
     
     // IMAGE RESTAURÉE (Visible during reveal)
     if (currentQuestion.pokemon.sprite) {

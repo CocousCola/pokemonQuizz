@@ -11,6 +11,7 @@
 </head>
 <body>
     <div id="app">
+        <audio id="cry-player" class="hidden"></audio>
         <!-- Configuration Dashboard -->
         <div id="config-screen" class="screen flex-center">
             <div class="retro-box config-container">
@@ -31,7 +32,7 @@
                         <button class="mode-btn disabled" data-mode="TYPES">
                             <span class="icon">🔥</span> MAÎTRE TYPES
                         </button>
-                        <button class="mode-btn disabled" data-mode="CRY">
+                        <button class="mode-btn" onclick="selectMode('CRY')" data-mode="CRY">
                             <span class="icon">🔊</span> CRI DE GUERRE
                         </button>
                         <button class="mode-btn" onclick="selectMode('SURVIVAL')" data-mode="SURVIVAL">

@@ -130,6 +130,8 @@ class PokemonService {
             types = ['WHO_IS_THIS_TEXT'];
         } else if (mode === 'SHADOW' || mode === 'SURVIVAL') {
             types = ['WHO_IS_THIS_TEXT'];
+        } else if (mode === 'CRY') {
+            types = ['GUESS_CRY'];
         } else if (mode === 'POKEDEX') {
             types = ['DEX_NUMBER_QUIZ', 'WHO_IS_NUMBER', 'ORDER_CHRONO'];
         } else if (mode === 'MARATHON') {
@@ -191,6 +193,14 @@ class PokemonService {
                 questionData.text = "Qui est ce Pokémon ?";
                 questionData.options = this.shuffle([mainPokemon, ...others]).map(p => p.nameFr);
                 questionData.answer = mainPokemon.nameFr;
+                break;
+
+            case 'GUESS_CRY':
+                questionData.text = "À qui appartient ce cri ?";
+                questionData.options = this.shuffle([mainPokemon, ...others]).map(p => p.nameFr);
+                questionData.answer = mainPokemon.nameFr;
+                questionData.audio = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/${mainPokemon.id}.ogg`;
+                questionData.hideSprite = true; // Hide sprite initially
                 break;
 
             case 'GUESS_TYPE':
