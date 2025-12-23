@@ -176,6 +176,9 @@ function revealResults(code) {
         game.timer = null;
     }
 
+    // Process timeouts (Survival mode)
+    gameManager.checkRoundEnd(code);
+
     const currentQuestion = game.questions[game.currentQuestionIndex];
     const playerResults = Array.from(game.players.values()).map(p => ({
         id: p.id,
@@ -183,7 +186,9 @@ function revealResults(code) {
         isCorrect: p.isCorrect,
         pointsGained: p.totalPointsGained,
         score: p.score,
-        trainerSpriteId: p.trainerSpriteId
+        trainerSpriteId: p.trainerSpriteId,
+        lives: p.lives,            // New
+        isEliminated: p.isEliminated // New
     }));
 
     const fastest = gameManager.getFastestPlayer(code);

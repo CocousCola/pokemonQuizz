@@ -79,7 +79,14 @@ class GameManager {
             count = 151;
             timeLimit = 30;
         } else if (game.settings.mode === 'SURVIVAL') {
-            timeLimit = 10;
+            count = 100; // Large pool for survival
+            timeLimit = 12; // Start faster
+            
+            // Initialize Lives
+            for (const player of game.players.values()) {
+                player.lives = 4;
+                player.isEliminated = false;
+            }
         } else if (game.settings.mode === 'ORTHOGRAPH') {
             timeLimit = 20;
         }
@@ -126,9 +133,18 @@ class GameManager {
         } else {
             player.totalPointsGained = 0;
             player.currentStreak = 0;
+            
+            // Survival Damage (Immediate)
+            if (game.settings.mode === 'SURVIVAL' && !player.isEliminated) {
+                player.lives -= 1;
+                if (player.lives <= 0) {
+                    player.lives = 0;
+                    player.isEliminated = true;
+                }
+            }
         }
 
-        // Check if all players have answered
+        // Check if all active players have answered
         let allAnswered = true;
         for (const p of game.players.values()) {
             if (!p.hasAnswered) {
@@ -149,10 +165,25 @@ class GameManager {
 
         game.currentQuestionIndex++;
         
+        // Speed Up Logic for Survival
+        if (game.settings.mode === 'SURVIVAL' && game.currentQuestionIndex > 0 && game.currentQuestionIndex % 5 === 0) {
+            game.timeLimit = Math.max(5, game.timeLimit - 2); // Reduce by 2s every 5 questions, min 5s
+        }
+
         for (const player of game.players.values()) {
             player.hasAnswered = false;
             player.isCorrect = false;
             player.totalPointsGained = 0;
+        }
+        
+        // Check Survival Win Condition (1 survivor)
+        if (game.settings.mode === 'SURVIVAL') {
+            const survivors = Array.from(game.players.values()).filter(p => !p.isEliminated);
+            if (survivors.length <= 1 && game.players.size > 1) {
+                 // Game Over if 1 or 0 survivors (unless playing alone)
+                 game.status = 'finished';
+                 return { status: 'finished' };
+            }
         }
 
         if (game.currentQuestionIndex >= game.questions.length) {
@@ -199,6 +230,22 @@ class GameManager {
         return Array.from(game.players.values())
             .sort((a, b) => b.score - a.score)
             .map((p, index) => ({ ...p, position: index + 1 }));
+    }
+
+    checkRoundEnd(code) {
+        const game = this.games.get(code);
+        if (!game || game.settings.mode !== 'SURVIVAL') return;
+
+        for (const player of game.players.values()) {
+            // If player hasn't answered and isn't eliminated yet -> lose a life
+            if (!player.hasAnswered && !player.isEliminated) {
+                player.lives -= 1;
+                if (player.lives <= 0) {
+                    player.lives = 0;
+                    player.isEliminated = true;
+                }
+            }
+        }
     }
 }
 

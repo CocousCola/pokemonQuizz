@@ -114,16 +114,39 @@ function updateLeaderboard(players) {
             div.className = 'leaderboard-item slide-in';
             div.style.animationDelay = `${i * 0.1}s`;
             const imgUrl = getAvatarUrl(p.trainerSpriteId);
-            const barWidth = Math.max((p.score / maxScore) * 100, 5);
+            
+            let barContent = '';
+            let scoreDisplay = p.score;
+            
+            if (config.mode === 'SURVIVAL') {
+                // Show Hearts
+                let hearts = '';
+                const lives = p.lives !== undefined ? p.lives : 0;
+                for(let h=0; h < lives; h++) hearts += '❤️';
+                
+                if (p.isEliminated) {
+                    hearts = '💀 K.O.';
+                    div.style.opacity = '0.6';
+                    div.style.filter = 'grayscale(100%)';
+                }
+                
+                scoreDisplay = hearts;
+                const lifePct = (lives / 4) * 100; 
+                const barColor = p.isEliminated ? '#555' : '#ff0000';
+                barContent = `<div class="leaderboard-bar" style="width: ${lifePct}%; background-color: ${barColor}"></div>`;
+            } else {
+                const barWidth = Math.max((p.score / maxScore) * 100, 5);
+                barContent = `<div class="leaderboard-bar" style="width: ${barWidth}%; background-color: ${p.color}"></div>`;
+            }
             
             div.innerHTML = `
                 <img src="${imgUrl}" class="leaderboard-avatar">
                 <div class="leaderboard-info">
                     <span class="leaderboard-pseudo">${rankIcon} #${i+1} ${p.pseudo}</span>
-                    <span class="leaderboard-score-text">${p.score}</span>
+                    <span class="leaderboard-score-text">${scoreDisplay}</span>
                 </div>
                 <div class="leaderboard-bar-container">
-                    <div class="leaderboard-bar" style="width: ${barWidth}%; background-color: ${p.color}"></div>
+                    ${barContent}
                 </div>
             `;
             list.appendChild(div);
@@ -144,6 +167,10 @@ function updateActivePlayers() {
     allPlayers.forEach(p => {
         const div = document.createElement('div');
         div.className = 'mini-player-card';
+        if (config.mode === 'SURVIVAL' && p.isEliminated) {
+            div.classList.add('eliminated-mini');
+        }
+        
         div.setAttribute('data-id', p.id);
         const imgUrl = getAvatarUrl(p.trainerSpriteId);
         
