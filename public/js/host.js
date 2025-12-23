@@ -6,8 +6,39 @@ let currentQuestion = null;
 let timerInterval = null;
 let timeLeft = 15;
 let nextQuestionTimeout = null;
+let cryCountdownInterval = null; // New
 let allPlayers = []; 
 let previousRanks = {}; // { playerId: rankIndex }
+
+// ... (keep existing code) ...
+
+function playCryWithCountdown(url) {
+    const overlay = document.getElementById('countdown-overlay');
+    const cryPlayer = document.getElementById('cry-player');
+    let count = 3;
+
+    if (!overlay || !cryPlayer) return;
+
+    // Reset previous
+    if (cryCountdownInterval) clearInterval(cryCountdownInterval);
+    cryPlayer.pause();
+    
+    overlay.textContent = count;
+    overlay.classList.remove('hidden');
+
+    cryCountdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            overlay.textContent = count;
+        } else {
+            clearInterval(cryCountdownInterval);
+            overlay.classList.add('hidden');
+            cryPlayer.src = url;
+            cryPlayer.volume = 1.0;
+            cryPlayer.play().catch(e => console.log("Audio play failed:", e));
+        }
+    }, 1000);
+}
 let config = {
     mode: 'CLASSIC',
     limit: 12,
@@ -341,12 +372,16 @@ socket.on('question', (data) => {
     
     // Audio Handling (Cries)
     const cryPlayer = document.getElementById('cry-player');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+
+    // Reset overlay
+    if (countdownOverlay) countdownOverlay.classList.add('hidden');
+    if (cryCountdownInterval) clearInterval(cryCountdownInterval);
+
     if (cryPlayer) {
         cryPlayer.pause();
         if (currentQuestion.audio) {
-            cryPlayer.src = currentQuestion.audio;
-            cryPlayer.volume = 1.0;
-            cryPlayer.play().catch(e => console.log("Audio play failed:", e));
+            playCryWithCountdown(currentQuestion.audio);
         }
     }
 
@@ -446,6 +481,9 @@ function showResultPopup(data) {
     // Stop Cry Audio if playing
     const cryPlayer = document.getElementById('cry-player');
     if (cryPlayer) cryPlayer.pause();
+    if (cryCountdownInterval) clearInterval(cryCountdownInterval);
+    const overlay = document.getElementById('countdown-overlay');
+    if (overlay) overlay.classList.add('hidden');
     
     // IMAGE RESTAURÉE (Visible during reveal)
     if (currentQuestion.pokemon.sprite) {
