@@ -48,6 +48,13 @@
     box-shadow: 0 5px 0 var(--gb-darkest);
 }
 
+.mode-btn.disabled {
+    opacity: 0.5;
+    filter: grayscale(100%) blur(2px);
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
 .mode-icon {
     font-size: 2.5rem;
     margin-bottom: 10px;

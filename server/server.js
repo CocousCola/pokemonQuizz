@@ -3,7 +3,6 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getLocalIP } from './utils/ipDetector.js';
 import pokemonService from './pokemonService.js';
 import gameManager from './gameManager.js';
 
@@ -21,7 +20,6 @@ const io = new Server(httpServer, {
 });
 
 const PORT = process.env.PORT || 3000;
-const LOCAL_IP = getLocalIP();
 
 // Middleware
 app.use(express.static(path.join(rootDir, 'public')));
@@ -38,13 +36,11 @@ app.get('/player', (req, res) => {
 // Socket.IO Logic
 io.on('connection', (socket) => {
     // Determine the Player URL
-    // If on Render, use the external URL provided by environment variable
-    // Otherwise use the local IP
     let playerUrl;
     if (process.env.RENDER_EXTERNAL_URL) {
         playerUrl = `${process.env.RENDER_EXTERNAL_URL}/player.html`;
     } else {
-        playerUrl = `http://${LOCAL_IP}:${PORT}/player.html`;
+        playerUrl = `http://localhost:${PORT}/player.html`;
     }
 
     // Send server info to client for QR Code generation
@@ -205,30 +201,9 @@ function revealResults(code) {
 // Start Server
 async function start() {
     await pokemonService.init();
-    
-    // Get all IPs for debugging
-    const os = await import('os');
-    const interfaces = os.networkInterfaces();
-    const allIps = [];
-    for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name]) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                allIps.push(`${name}: ${iface.address}`);
-            }
-        }
-    }
 
     httpServer.listen(PORT, '0.0.0.0', () => {
-        console.log('\n' + '='.repeat(50));
-        console.log('🎮  POKÉMON QUIZ BATTLE - GÉNÉRATION 1  🎮');
-        console.log('='.repeat(50));
-        console.log(`\n📡  SERVEUR DÉMARRÉ !`);
-        console.log(`\n📍  ADRESSES DÉTECTÉES :`);
-        allIps.forEach(ip => console.log(`   - ${ip}`));
-        console.log(`\n📺  ÉCRAN TV (Principal): http://${LOCAL_IP}:${PORT}`);
-        console.log(`📱  JOUEURS (Mobile):    http://${LOCAL_IP}:${PORT}/player.html`);
-        console.log(`\n💡  SI LE MOBILE NE MARCHE PAS, ESSAYE UNE AUTRE IP DE LA LISTE`);
-        console.log('='.repeat(50) + '\n');
+        console.log('🎮  POKÉMON QUIZ BATTLE - SERVEUR EN LIGNE  🎮');
     });
 }
 

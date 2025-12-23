@@ -128,6 +128,8 @@ class PokemonService {
         
         if (mode === 'ORTHOGRAPH') {
             types = ['WHO_IS_THIS_TEXT'];
+        } else if (mode === 'SHADOW') {
+            types = ['WHO_IS_THIS_TEXT'];
         } else if (mode === 'POKEDEX') {
             types = ['DEX_NUMBER_QUIZ', 'WHO_IS_NUMBER', 'ORDER_CHRONO'];
         } else if (mode === 'MARATHON') {
