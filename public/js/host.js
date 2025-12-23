@@ -42,7 +42,8 @@ function playCryWithCountdown(url) {
 let config = {
     mode: 'CLASSIC',
     limit: 12,
-    lives: 4
+    lives: 4,
+    generations: [1]
 };
 
 const screens = {
@@ -291,6 +292,28 @@ window.updateRangeVal = function(val) {
 window.updateLivesVal = function(val) {
     config.lives = parseInt(val);
     document.getElementById('lives-val').textContent = `❤️ ${val} VIES`;
+};
+
+window.toggleGen = function(gen) {
+    const index = config.generations.indexOf(gen);
+    if (index > -1) {
+        // Can't remove if it's the only one
+        if (config.generations.length > 1) {
+            config.generations.splice(index, 1);
+        }
+    } else {
+        config.generations.push(gen);
+    }
+    
+    // Update UI
+    document.querySelectorAll('.gen-btn').forEach(btn => {
+        const g = parseInt(btn.getAttribute('data-gen'));
+        if (config.generations.includes(g)) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
 };
 
 document.addEventListener('DOMContentLoaded', () => {

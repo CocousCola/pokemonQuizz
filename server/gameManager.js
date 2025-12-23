@@ -93,7 +93,8 @@ class GameManager {
             timeLimit = 20;
         }
         
-        game.questions = await pokemonService.generateQuestions(count, game.settings.mode);
+        const generations = game.settings.generations || [1];
+        game.questions = await pokemonService.generateQuestions(count, game.settings.mode, generations);
         game.currentQuestionIndex = -1;
         game.timeLimit = timeLimit;
         

@@ -546,3 +546,32 @@ input[type=range]::-webkit-slider-thumb {
     50% { transform: translate(-50%, -50%) scale(1.2); }
     100% { transform: translate(-50%, -50%) scale(1); }
 }
+
+/* Generation Selection Grid */
+.gens-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.gen-btn {
+    padding: 10px;
+    background: white;
+    border: 3px solid var(--gb-darkest);
+    font-family: var(--font-retro);
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.gen-btn.selected {
+    background: var(--poke-blue);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 3px 0 var(--gb-darkest);
+}
+
+.gen-btn:hover {
+    border-color: var(--poke-blue);
+}
