@@ -44,10 +44,18 @@
                 </div>
 
                 <div class="config-section" id="questions-config">
-                    <h3>2. LONGUEUR DU QUIZ</h3>
-                    <div class="range-selector">
+                    <h3 id="config-title">2. LONGUEUR DU QUIZ</h3>
+                    
+                    <!-- Standard Range (Questions) -->
+                    <div id="standard-config" class="range-selector">
                         <input type="range" id="questions-range" min="5" max="50" value="12" oninput="updateRangeVal(this.value)">
                         <span id="questions-val">12 QUESTIONS</span>
+                    </div>
+
+                    <!-- Survival Config (Lives) -->
+                    <div id="survival-config" class="range-selector hidden">
+                        <input type="range" id="lives-range" min="1" max="10" value="4" oninput="updateLivesVal(this.value)">
+                        <span id="lives-val">❤️ 4 VIES</span>
                     </div>
                 </div>
 
@@ -69,6 +77,9 @@
             
             <div class="players-container retro-box">
                 <h3>JOUEURS CONNECTÉS (<span id="player-count">0</span>/10)</h3>
+                <div id="min-player-warning" class="hidden" style="color: red; margin-bottom: 10px; font-weight: bold;">
+                    ⚠️ IL FAUT AU MOINS 2 JOUEURS POUR LE MODE SURVIE !
+                </div>
                 <div id="players-list" class="players-grid-10">
                     <!-- Players inserted here -->
                 </div>

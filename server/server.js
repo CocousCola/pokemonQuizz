@@ -194,6 +194,7 @@ function revealResults(code) {
     const fastest = gameManager.getFastestPlayer(code);
     
     io.to(code).emit('question-results', {
+        mode: game.settings.mode, // New field
         correctAnswer: currentQuestion.answer,
         extra: currentQuestion.extra || '',
         playerResults,

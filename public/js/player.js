@@ -194,17 +194,40 @@ socket.on('question-results', (data) => {
     const title = document.getElementById('feedback-title');
     const points = document.getElementById('feedback-points');
     
-    if (myResult.isCorrect) {
-        box.className = 'feedback-box correct';
-        title.textContent = 'EXCELLENT !';
-        points.textContent = `+${myResult.pointsGained} pts`;
+    // Survival Mode Logic
+    if (data.mode === 'SURVIVAL') {
+        if (myResult.isCorrect) {
+            box.className = 'feedback-box correct';
+            title.textContent = 'BIEN JOUÉ !';
+            points.textContent = 'Vie intacte ❤️';
+        } else {
+            box.className = 'feedback-box wrong';
+            if (myResult.isEliminated) {
+                title.textContent = 'ÉLIMINÉ 💀';
+                points.textContent = 'Game Over';
+            } else {
+                title.textContent = 'TOUCHÉ !';
+                points.textContent = '-1 ❤️';
+            }
+        }
+        
+        const lives = myResult.lives !== undefined ? myResult.lives : 0;
+        document.getElementById('stats-score').textContent = myResult.isEliminated ? 'K.O.' : `${lives} ❤️`;
+
     } else {
-        box.className = 'feedback-box wrong';
-        title.textContent = 'DOMMAGE...';
-        points.textContent = '0 pt';
+        // Classic Logic
+        if (myResult.isCorrect) {
+            box.className = 'feedback-box correct';
+            title.textContent = 'EXCELLENT !';
+            points.textContent = `+${myResult.pointsGained} pts`;
+        } else {
+            box.className = 'feedback-box wrong';
+            title.textContent = 'DOMMAGE...';
+            points.textContent = '0 pt';
+        }
+        
+        document.getElementById('stats-score').textContent = `${myResult.score} pts`;
     }
-    
-    document.getElementById('stats-score').textContent = `${myResult.score} pts`;
 });
 
 socket.on('game-over', (data) => {

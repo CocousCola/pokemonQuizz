@@ -82,9 +82,11 @@ class GameManager {
             count = 100; // Large pool for survival
             timeLimit = 12; // Start faster
             
-            // Initialize Lives
+            // Initialize Lives (Default 4 if not set)
+            const initialLives = game.settings.lives || 4;
+            
             for (const player of game.players.values()) {
-                player.lives = 4;
+                player.lives = initialLives;
                 player.isEliminated = false;
             }
         } else if (game.settings.mode === 'ORTHOGRAPH') {

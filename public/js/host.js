@@ -10,7 +10,8 @@ let allPlayers = [];
 let previousRanks = {}; // { playerId: rankIndex }
 let config = {
     mode: 'CLASSIC',
-    limit: 12
+    limit: 12,
+    lives: 4
 };
 
 const screens = {
@@ -214,21 +215,39 @@ window.selectMode = function(mode) {
     if(btn) btn.classList.add('selected');
     
     const questionsConfig = document.getElementById('questions-config');
-    const questionsRange = document.getElementById('questions-range');
-    const questionsVal = document.getElementById('questions-val');
+    const standardConfig = document.getElementById('standard-config');
+    const survivalConfig = document.getElementById('survival-config');
+    const configTitle = document.getElementById('config-title');
     
+    // Reset visibility
+    questionsConfig.style.opacity = '1';
+    questionsConfig.style.pointerEvents = 'auto';
+    if(standardConfig) standardConfig.classList.remove('hidden');
+    if(survivalConfig) survivalConfig.classList.add('hidden');
+    if(configTitle) configTitle.textContent = "2. LONGUEUR DU QUIZ";
+    
+    const questionsVal = document.getElementById('questions-val');
+    const questionsRange = document.getElementById('questions-range');
+
     if (mode === 'MARATHON') {
         questionsConfig.style.opacity = '0.5';
         questionsConfig.style.pointerEvents = 'none';
-        questionsRange.disabled = true;
+        if(questionsRange) questionsRange.disabled = true;
         config.limit = 151;
-        questionsVal.textContent = "151 POKÉMON (FIXE)";
-    } else {
+        if(questionsVal) questionsVal.textContent = "151 POKÉMON (FIXE)";
+    } 
+    else if (mode === 'SURVIVAL') {
+        if(standardConfig) standardConfig.classList.add('hidden');
+        if(survivalConfig) survivalConfig.classList.remove('hidden');
+        if(configTitle) configTitle.textContent = "2. NOMBRE DE VIES";
+        if(document.getElementById('lives-range')) config.lives = parseInt(document.getElementById('lives-range').value);
+    } 
+    else {
         questionsConfig.style.opacity = '1';
         questionsConfig.style.pointerEvents = 'auto';
-        questionsRange.disabled = false;
+        if(questionsRange) questionsRange.disabled = false;
         config.limit = parseInt(questionsRange.value);
-        questionsVal.textContent = `${config.limit} QUESTIONS`;
+        if(questionsVal) questionsVal.textContent = `${config.limit} QUESTIONS`;
     }
 };
 
@@ -236,6 +255,11 @@ window.updateRangeVal = function(val) {
     if (config.mode === 'MARATHON') return;
     config.limit = parseInt(val);
     document.getElementById('questions-val').textContent = `${val} QUESTIONS`;
+};
+
+window.updateLivesVal = function(val) {
+    config.lives = parseInt(val);
+    document.getElementById('lives-val').textContent = `❤️ ${val} VIES`;
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -262,6 +286,7 @@ socket.on('lobby-update', (data) => {
     const list = document.getElementById('players-list');
     const countEl = document.getElementById('player-count');
     const startBtn = document.getElementById('start-game-btn');
+    const warningEl = document.getElementById('min-player-warning');
     
     if (list) {
         list.innerHTML = '';
@@ -278,8 +303,21 @@ socket.on('lobby-update', (data) => {
     }
     
     if (countEl) countEl.textContent = data.players.length;
-    if (startBtn && data.players.length >= 1) {
-        startBtn.classList.remove('hidden');
+    
+    // Minimum Player Logic for Survival
+    if (config.mode === 'SURVIVAL') {
+        if (data.players.length < 2) {
+            if(startBtn) startBtn.classList.add('hidden');
+            if(warningEl) warningEl.classList.remove('hidden');
+        } else {
+            if(startBtn) startBtn.classList.remove('hidden');
+            if(warningEl) warningEl.classList.add('hidden');
+        }
+    } else {
+        if(warningEl) warningEl.classList.add('hidden');
+        if (startBtn && data.players.length >= 1) {
+            startBtn.classList.remove('hidden');
+        }
     }
 });
 
