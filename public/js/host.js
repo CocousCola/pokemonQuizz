@@ -276,7 +276,7 @@ socket.on('question', (data) => {
     
     // Reset filters
     sprite.className = 'pixel-art'; // Base class
-    sprite.style.filter = 'none';
+    sprite.style.filter = '';
 
     if (currentQuestion.hideSprite) {
         sprite.classList.add('hidden');
