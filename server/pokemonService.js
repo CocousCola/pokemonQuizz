@@ -46,57 +46,65 @@ class PokemonService {
     }
 
     async loadGenerations(gens) {
-        const gensToLoad = gens.filter(g => !this.loadedGenerations.has(g));
-        if (gensToLoad.length === 0) return;
-
-        console.log(`Loading generations: ${gensToLoad.join(', ')}...`);
-
-        for (const gen of gensToLoad) {
-            const [start, end] = this.genRanges[gen];
-            const count = end - start + 1;
-            
-            try {
-                // Fetch basic info for the range
-                const response = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${start - 1}&limit=${count}`);
-                const data = await response.json();
-                
-                // Process in batches
-                const batchSize = 10;
-                
-                for (let i = 0; i < data.results.length; i += batchSize) {
-                    const batch = data.results.slice(i, i + batchSize);
-                    const batchPromises = batch.map(async (p) => {
-                        const basicData = await fetch(p.url).then(res => res.json());
-                        // Fetch species data for French name
-                        const speciesData = await fetch(basicData.species.url).then(res => res.json());
-                        const frName = speciesData.names.find(n => n.language.name === 'fr');
-                        
-                        return {
-                            ...basicData,
-                            nameFr: frName ? frName.name : basicData.name,
-                            typesFr: basicData.types.map(t => this.typeTranslations[t.type.name] || t.type.name),
-                            gen: gen
-                        };
-                    });
-                    
-                    const batchResults = await Promise.all(batchPromises);
-                    this.allPokemonData.push(...batchResults);
-                }
-                
-                this.loadedGenerations.add(gen);
-                console.log(`Loaded Gen ${gen} (${count} Pokemon).`);
-            } catch (error) {
-                console.error(`Error loading Gen ${gen}:`, error);
-            }
-        }
+        const gensNumbers = gens.map(g => parseInt(g));
+        const gensToLoad = gensNumbers.filter(g => !this.loadedGenerations.has(g));
         
-        // Sort by ID to ensure order
-        this.allPokemonData.sort((a, b) => a.id - b.id);
+        if (gensToLoad.length > 0) {
+            console.log(`Loading generations: ${gensToLoad.join(', ')}...`);
+
+            for (const gen of gensToLoad) {
+                const [start, end] = this.genRanges[gen];
+                const count = end - start + 1;
+                
+                try {
+                    // Fetch basic info for the range
+                    const response = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${start - 1}&limit=${count}`);
+                    const data = await response.json();
+                    
+                    // Process in batches
+                    const batchSize = 10;
+                    
+                    for (let i = 0; i < data.results.length; i += batchSize) {
+                        const batch = data.results.slice(i, i + batchSize);
+                        const batchPromises = batch.map(async (p) => {
+                            const basicData = await fetch(p.url).then(res => res.json());
+                            // Fetch species data for French name
+                            const speciesData = await fetch(basicData.species.url).then(res => res.json());
+                            const frName = speciesData.names.find(n => n.language.name === 'fr');
+                            
+                            return {
+                                ...basicData,
+                                nameFr: frName ? frName.name : basicData.name,
+                                typesFr: basicData.types.map(t => this.typeTranslations[t.type.name] || t.type.name),
+                                gen: gen
+                            };
+                        });
+                        
+                        const batchResults = await Promise.all(batchPromises);
+                        this.allPokemonData.push(...batchResults);
+                    }
+                    
+                    this.loadedGenerations.add(gen);
+                    console.log(`Loaded Gen ${gen} (${count} Pokemon).`);
+                } catch (error) {
+                    console.error(`Error loading Gen ${gen}:`, error);
+                }
+            }
+            
+            // Sort by ID to ensure order
+            this.allPokemonData.sort((a, b) => a.id - b.id);
+        }
+
+        // Log Pool Status
+        const currentPool = this.getPool(gensNumbers);
+        console.log(`[DEBUG] Loaded Generations: ${Array.from(this.loadedGenerations).join(', ')}`);
+        console.log(`[DEBUG] Pool size for requested generations [${gensNumbers.join(', ')}]: ${currentPool.length} Pokémon.`);
     }
 
     getPool(generations) {
         if (!generations || generations.length === 0) return this.allPokemonData;
-        return this.allPokemonData.filter(p => generations.includes(p.gen));
+        const genSet = new Set(generations.map(g => parseInt(g)));
+        return this.allPokemonData.filter(p => genSet.has(p.gen));
     }
 
     getRandomPokemon(count = 1, generations = [1]) {
@@ -197,7 +205,19 @@ class PokemonService {
         }
         
         // Others should also be from selected generations
-        const others = this.getRandomPokemon(4, generations).filter(p => p.id !== mainPokemon.id).slice(0, 3);
+        // Ensuring unique options for Pokemon based questions
+        let others = [];
+        let attempts = 0;
+        const othersSet = new Set();
+        
+        while (others.length < 3 && attempts < 20) {
+             const randomP = this.getRandomPokemon(1, generations)[0];
+             if (randomP && randomP.id !== mainPokemon.id && !othersSet.has(randomP.id)) {
+                 others.push(randomP);
+                 othersSet.add(randomP.id);
+             }
+             attempts++;
+        }
         
         let questionData = {
             type: type,
@@ -240,8 +260,19 @@ class PokemonService {
             case 'GUESS_TYPE':
                 questionData.text = `Quel est le type de ${mainPokemon.nameFr} ?`;
                 const mainType = mainPokemon.typesFr.join('/');
-                const otherTypes = others.map(p => p.typesFr.join('/'));
-                questionData.options = this.shuffle([mainType, ...otherTypes]);
+                const optionsSet = new Set([mainType]);
+                
+                let typeAttempts = 0;
+                while (optionsSet.size < 4 && typeAttempts < 50) {
+                     const randomP = this.getRandomPokemon(1, generations)[0];
+                     if (randomP) {
+                         const t = randomP.typesFr.join('/');
+                         optionsSet.add(t);
+                     }
+                     typeAttempts++;
+                }
+                
+                questionData.options = this.shuffle(Array.from(optionsSet));
                 questionData.answer = mainType;
                 break;
 

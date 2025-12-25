@@ -295,6 +295,7 @@ window.updateLivesVal = function(val) {
 };
 
 window.toggleGen = function(gen) {
+    gen = parseInt(gen);
     const index = config.generations.indexOf(gen);
     if (index > -1) {
         // Can't remove if it's the only one
