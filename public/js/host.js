@@ -9,54 +9,26 @@ let nextQuestionTimeout = null;
 let cryCountdownInterval = null; // New
 let allPlayers = []; 
 let previousRanks = {}; // { playerId: rankIndex }
+let playerURL = null; // Store for QR Code
 
-// ... (keep existing code) ...
-
-function playCryWithCountdown(url) {
-    const overlay = document.getElementById('countdown-overlay');
-    const cryPlayer = document.getElementById('cry-player');
-    let count = 3;
-
-    if (!overlay || !cryPlayer) return;
-
-    // Reset previous
-    if (cryCountdownInterval) clearInterval(cryCountdownInterval);
-    cryPlayer.pause();
-    
-    overlay.textContent = count;
-    overlay.classList.remove('hidden');
-
-    cryCountdownInterval = setInterval(() => {
-        count--;
-        if (count > 0) {
-            overlay.textContent = count;
-        } else {
-            clearInterval(cryCountdownInterval);
-            overlay.classList.add('hidden');
-            cryPlayer.src = url;
-            cryPlayer.volume = 1.0;
-            cryPlayer.play().catch(e => console.log("Audio play failed:", e));
+function generateQRCode() {
+    const qrEl = document.getElementById("qrcode");
+    if (qrEl && playerURL) {
+        qrEl.innerHTML = "";
+        try {
+            new QRCode(qrEl, {
+                text: playerURL,
+                width: 150,
+                height: 150,
+                colorDark: "#0f380f",
+                colorLight: "#9bbc0f",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } catch(e) {
+            console.error("QR Code generation failed:", e);
         }
-    }, 1000);
+    }
 }
-let config = {
-    mode: 'CLASSIC',
-    limit: 12,
-    lives: 4,
-    generations: [1]
-};
-
-const screens = {
-    config: document.getElementById('config-screen'),
-    lobby: document.getElementById('lobby-screen'),
-    question: document.getElementById('question-screen'),
-    leaderboard: document.getElementById('leaderboard-screen'),
-    gameOver: document.getElementById('game-over-screen')
-};
-
-const popups = {
-    result: document.getElementById('result-popup')
-};
 
 // SVG Icons for Options
 const shapeIcons = [
@@ -110,7 +82,161 @@ function startTimer() {
     }, 100);
 }
 
-// ... (existing code) ...
+function stopTimer() {
+    clearInterval(timerInterval);
+}
+
+function updateLeaderboard(players) {
+    allPlayers = players;
+    const list = document.getElementById('leaderboard-list');
+    
+    if (list) {
+        list.innerHTML = '';
+        const maxScore = Math.max(...players.map(p => p.score), 1);
+
+        players.forEach((p, i) => {
+            // Rank Logic
+            let rankIcon = '<span class="rank-change rank-same">➖</span>';
+            const currentRank = i;
+            
+            if (previousRanks[p.id] !== undefined) {
+                const prev = previousRanks[p.id];
+                if (currentRank < prev) { // Improved (lower index is better)
+                    rankIcon = '<span class="rank-change rank-up">⬆️</span>';
+                } else if (currentRank > prev) {
+                    rankIcon = '<span class="rank-change rank-down">⬇️</span>';
+                }
+            }
+
+            const div = document.createElement('div');
+            div.className = 'leaderboard-item slide-in';
+            div.style.animationDelay = `${i * 0.1}s`;
+            const imgUrl = getAvatarUrl(p.trainerSpriteId);
+            
+            let barContent = '';
+            let scoreDisplay = p.score;
+            
+            if (config.mode === 'SURVIVAL') {
+                // Show Hearts
+                let hearts = '';
+                const lives = p.lives !== undefined ? p.lives : 0;
+                for(let h=0; h < lives; h++) hearts += '❤️';
+                
+                if (p.isEliminated) {
+                    hearts = '💀 K.O.';
+                    div.style.opacity = '0.6';
+                    div.style.filter = 'grayscale(100%)';
+                }
+                
+                scoreDisplay = hearts;
+                const lifePct = (lives / 4) * 100; 
+                const barColor = p.isEliminated ? '#555' : '#ff0000';
+                barContent = `<div class="leaderboard-bar" style="width: ${lifePct}%; background-color: ${barColor}"></div>`;
+            } else {
+                const barWidth = Math.max((p.score / maxScore) * 100, 5);
+                barContent = `<div class="leaderboard-bar" style="width: ${barWidth}%; background-color: ${p.color}"></div>`;
+            }
+            
+            div.innerHTML = `
+                <img src="${imgUrl}" class="leaderboard-avatar">
+                <div class="leaderboard-info">
+                    <span class="leaderboard-pseudo">${rankIcon} #${i+1} ${p.pseudo}</span>
+                    <span class="leaderboard-score-text">${scoreDisplay}</span>
+                </div>
+                <div class="leaderboard-bar-container">
+                    ${barContent}
+                </div>
+            `;
+            list.appendChild(div);
+        });
+        
+        // Update ranks
+        const newRanks = {};
+        players.forEach((p, i) => { newRanks[p.id] = i; });
+        previousRanks = newRanks;
+    }
+}
+
+function updateActivePlayers() {
+    const container = document.getElementById('active-players');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    allPlayers.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'mini-player-card';
+        if (config.mode === 'SURVIVAL' && p.isEliminated) {
+            div.classList.add('eliminated-mini');
+        }
+        
+        div.setAttribute('data-id', p.id);
+        const imgUrl = getAvatarUrl(p.trainerSpriteId);
+        
+        div.innerHTML = `
+            <img src="${imgUrl}">
+            <div class="status-indicator"></div>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function playCryWithCountdown(url) {
+    const overlay = document.getElementById('countdown-overlay');
+    const cryPlayer = document.getElementById('cry-player');
+    let count = 3;
+
+    if (!overlay || !cryPlayer) return;
+
+    // Reset previous
+    if (cryCountdownInterval) clearInterval(cryCountdownInterval);
+    cryPlayer.pause();
+    
+    overlay.textContent = count;
+    overlay.classList.remove('hidden');
+
+    cryCountdownInterval = setInterval(() => {
+        count--;
+        if (count > 0) {
+            overlay.textContent = count;
+        } else {
+            clearInterval(cryCountdownInterval);
+            overlay.classList.add('hidden');
+            cryPlayer.src = url;
+            cryPlayer.volume = 1.0;
+            cryPlayer.play().catch(e => console.log("Audio play failed:", e));
+        }
+    }, 1000);
+}
+let config = {
+    mode: 'CLASSIC',
+    limit: 12,
+    lives: 4,
+    generations: [1]
+};
+
+const screens = {
+    config: document.getElementById('config-screen'),
+    lobby: document.getElementById('lobby-screen'),
+    question: document.getElementById('question-screen'),
+    leaderboard: document.getElementById('leaderboard-screen'),
+    gameOver: document.getElementById('game-over-screen')
+};
+
+const popups = {
+    result: document.getElementById('result-popup')
+};
+
+// --- Socket Events ---
+
+socket.on('connect', () => {
+    console.log('Connecté au serveur');
+});
+
+socket.on('server-info', (data) => {
+    playerURL = data.url;
+    const urlEl = document.getElementById("player-url");
+    if (urlEl) urlEl.textContent = playerURL;
+});
 
 // UI Handlers
 window.selectMode = function(mode) {
@@ -168,11 +294,27 @@ window.updateRangeVal = function(val) {
     document.getElementById('questions-val').textContent = `${val} QUESTIONS`;
 };
 
-// ... (existing code) ...
+window.updateLivesVal = function(val) {
+    config.lives = parseInt(val);
+    document.getElementById('lives-val').textContent = `❤️ ${val} VIES`;
+};
+
+function updateGenUI() {
+    document.querySelectorAll('.gen-btn').forEach(btn => {
+        const g = parseInt(btn.getAttribute('data-gen'));
+        if (config.generations.includes(g)) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+}
 
 window.toggleGen = function(gen) {
     gen = parseInt(gen);
     
+    console.log(`Toggling Gen: ${gen}, Mode: ${config.mode}, Current Gens: ${config.generations}`);
+
     if (config.mode === 'MARATHON' || config.mode === 'MARATHON_SHADOW') {
         // Exclusive selection for Marathon
         config.generations = [gen];
@@ -183,12 +325,12 @@ window.toggleGen = function(gen) {
             if (config.generations.length > 1) {
                 config.generations.splice(index, 1);
             }
-        }
-        else {
+        } else {
             config.generations.push(gen);
         }
     }
     
+    console.log(`New Gens: ${config.generations}`);
     updateGenUI();
 };
 
@@ -209,6 +351,8 @@ socket.on('game-created', (data) => {
     document.getElementById('display-game-code').textContent = gameCode;
     document.getElementById('mode-display').textContent = `MODE: ${config.mode}`;
     showScreen('lobby');
+    // Generate QR Code now that element is visible
+    setTimeout(generateQRCode, 100); 
 });
 
 socket.on('lobby-update', (data) => {
