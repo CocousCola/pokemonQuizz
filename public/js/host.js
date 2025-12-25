@@ -267,6 +267,12 @@ window.selectMode = function(mode) {
         if(questionsRange) questionsRange.disabled = true;
         config.limit = 151;
         if(questionsVal) questionsVal.textContent = "151 POKÉMON (FIXE)";
+
+        // Force single generation for Marathon
+        if (config.generations.length > 1) {
+            config.generations = [config.generations[0]];
+            updateGenUI();
+        }
     } 
     else if (mode === 'SURVIVAL') {
         if(standardConfig) standardConfig.classList.add('hidden');
@@ -294,19 +300,7 @@ window.updateLivesVal = function(val) {
     document.getElementById('lives-val').textContent = `❤️ ${val} VIES`;
 };
 
-window.toggleGen = function(gen) {
-    gen = parseInt(gen);
-    const index = config.generations.indexOf(gen);
-    if (index > -1) {
-        // Can't remove if it's the only one
-        if (config.generations.length > 1) {
-            config.generations.splice(index, 1);
-        }
-    } else {
-        config.generations.push(gen);
-    }
-    
-    // Update UI
+function updateGenUI() {
     document.querySelectorAll('.gen-btn').forEach(btn => {
         const g = parseInt(btn.getAttribute('data-gen'));
         if (config.generations.includes(g)) {
@@ -315,6 +309,27 @@ window.toggleGen = function(gen) {
             btn.classList.remove('selected');
         }
     });
+}
+
+window.toggleGen = function(gen) {
+    gen = parseInt(gen);
+    
+    if (config.mode === 'MARATHON') {
+        // Exclusive selection for Marathon
+        config.generations = [gen];
+    } else {
+        const index = config.generations.indexOf(gen);
+        if (index > -1) {
+            // Can't remove if it's the only one
+            if (config.generations.length > 1) {
+                config.generations.splice(index, 1);
+            }
+        } else {
+            config.generations.push(gen);
+        }
+    }
+    
+    updateGenUI();
 };
 
 document.addEventListener('DOMContentLoaded', () => {
