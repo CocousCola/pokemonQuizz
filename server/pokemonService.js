@@ -16,6 +16,8 @@ class PokemonService {
             9: [906, 1025]
         };
         this.loadedGenerations = new Set();
+        this.loadingPromises = new Map(); // Track ongoing loads
+        this.loadedPokemonIds = new Set(); // Track loaded IDs to prevent duplicates
         this.allPokemonData = [];
         this.typeTranslations = {
             'normal': 'Normal',
@@ -47,28 +49,38 @@ class PokemonService {
 
     async loadGenerations(gens) {
         const gensNumbers = gens.map(g => parseInt(g));
-        const gensToLoad = gensNumbers.filter(g => !this.loadedGenerations.has(g));
+        // We want to ensure all requested generations are loaded or being loaded
+        const promises = gensNumbers.map(gen => this._loadSingleGeneration(gen));
         
-        if (gensToLoad.length > 0) {
-            console.log(`Loading generations: ${gensToLoad.join(', ')}...`);
+        await Promise.all(promises);
 
-            for (const gen of gensToLoad) {
-                const [start, end] = this.genRanges[gen];
-                const count = end - start + 1;
+        // Log Pool Status
+        const currentPool = this.getPool(gensNumbers);
+        console.log(`[DEBUG] Loaded Generations: ${Array.from(this.loadedGenerations).join(', ')}`);
+        console.log(`[DEBUG] Pool size for requested generations [${gensNumbers.join(', ')}]: ${currentPool.length} Pokémon.`);
+    }
+
+    async _loadSingleGeneration(gen) {
+        if (this.loadedGenerations.has(gen)) return;
+        if (this.loadingPromises.has(gen)) return this.loadingPromises.get(gen);
+
+        console.log(`Loading generation: ${gen}...`);
+
+        const loadPromise = (async () => {
+            const [start, end] = this.genRanges[gen];
+            const count = end - start + 1;
+            
+            try {
+                const response = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${start - 1}&limit=${count}`);
+                const data = await response.json();
                 
-                try {
-                    // Fetch basic info for the range
-                    const response = await fetch(`https://pokeapi.co/api/v2/pokemon?offset=${start - 1}&limit=${count}`);
-                    const data = await response.json();
-                    
-                    // Process in batches
-                    const batchSize = 10;
-                    
-                    for (let i = 0; i < data.results.length; i += batchSize) {
-                        const batch = data.results.slice(i, i + batchSize);
-                        const batchPromises = batch.map(async (p) => {
+                const batchSize = 10;
+                
+                for (let i = 0; i < data.results.length; i += batchSize) {
+                    const batch = data.results.slice(i, i + batchSize);
+                    const batchPromises = batch.map(async (p) => {
+                        try {
                             const basicData = await fetch(p.url).then(res => res.json());
-                            // Fetch species data for French name
                             const speciesData = await fetch(basicData.species.url).then(res => res.json());
                             const frName = speciesData.names.find(n => n.language.name === 'fr');
                             
@@ -78,29 +90,38 @@ class PokemonService {
                                 typesFr: basicData.types.map(t => this.typeTranslations[t.type.name] || t.type.name),
                                 gen: gen
                             };
-                        });
-                        
-                        const batchResults = await Promise.all(batchPromises);
-                        this.allPokemonData.push(...batchResults);
-                    }
+                        } catch (err) {
+                            console.error(`Failed to load Pokemon ${p.name}:`, err.message);
+                            return null;
+                        }
+                    });
                     
-                    this.loadedGenerations.add(gen);
-                    console.log(`Loaded Gen ${gen} (${count} Pokemon).`);
-                } catch (error) {
-                    console.error(`Error loading Gen ${gen}:`, error);
+                    const batchResults = await Promise.all(batchPromises);
+                    
+                    // Filter nulls and duplicates
+                    const newPokemon = batchResults.filter(p => p && !this.loadedPokemonIds.has(p.id));
+                    
+                    newPokemon.forEach(p => this.loadedPokemonIds.add(p.id));
+                    this.allPokemonData.push(...newPokemon);
+                    
+                    // Small delay to be nice to API
+                    await new Promise(r => setTimeout(r, 100));
                 }
+                
+                this.loadedGenerations.add(gen);
+                this.allPokemonData.sort((a, b) => a.id - b.id);
+                console.log(`Loaded Gen ${gen} (${count} Pokemon).`);
+                
+            } catch (error) {
+                console.error(`Error loading Gen ${gen}:`, error);
+            } finally {
+                this.loadingPromises.delete(gen);
             }
-            
-            // Sort by ID to ensure order
-            this.allPokemonData.sort((a, b) => a.id - b.id);
-        }
+        })();
 
-        // Log Pool Status
-        const currentPool = this.getPool(gensNumbers);
-        console.log(`[DEBUG] Loaded Generations: ${Array.from(this.loadedGenerations).join(', ')}`);
-        console.log(`[DEBUG] Pool size for requested generations [${gensNumbers.join(', ')}]: ${currentPool.length} Pokémon.`);
+        this.loadingPromises.set(gen, loadPromise);
+        return loadPromise;
     }
-
     getPool(generations) {
         if (!generations || generations.length === 0) return this.allPokemonData;
         const genSet = new Set(generations.map(g => parseInt(g)));
