@@ -75,7 +75,7 @@ class GameManager {
         let count = game.settings.limit || 12;
         let timeLimit = 15; // Default Classic
 
-        if (game.settings.mode === 'MARATHON') {
+        if (game.settings.mode === 'MARATHON' || game.settings.mode === 'MARATHON_SHADOW') {
             count = 151;
             timeLimit = 30;
         } else if (game.settings.mode === 'SURVIVAL') {

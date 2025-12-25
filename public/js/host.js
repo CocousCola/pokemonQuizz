@@ -80,7 +80,7 @@ function showScreen(id) {
 function startTimer() {
     timeLeft = 15;
     if (config.mode === 'SURVIVAL') timeLeft = 10;
-    if (config.mode === 'MARATHON') timeLeft = 30;
+    if (config.mode === 'MARATHON' || config.mode === 'MARATHON_SHADOW') timeLeft = 30;
     if (config.mode === 'ORTHOGRAPH') timeLeft = 20;
     
     const bar = document.getElementById('timer-bar-fill');
@@ -100,13 +100,6 @@ function startTimer() {
         const pct = (timeLeft / totalTime) * 100;
         bar.style.width = `${pct}%`;
         
-        // Progressive Reveal Logic for MARATHON - REMOVED per request
-        /*
-        if (config.mode === 'MARATHON') {
-             // Logic removed to keep image hidden/placeholder
-        }
-        */
-        
         if (timeLeft < 5) {
             bar.style.backgroundColor = 'var(--poke-red)';
         } else if (timeLeft < 10) {
@@ -117,127 +110,7 @@ function startTimer() {
     }, 100);
 }
 
-function stopTimer() {
-    clearInterval(timerInterval);
-}
-
-function updateLeaderboard(players) {
-    allPlayers = players;
-    const list = document.getElementById('leaderboard-list');
-    
-    if (list) {
-        list.innerHTML = '';
-        const maxScore = Math.max(...players.map(p => p.score), 1);
-
-        players.forEach((p, i) => {
-            // Rank Logic
-            let rankIcon = '<span class="rank-change rank-same">➖</span>';
-            const currentRank = i;
-            
-            if (previousRanks[p.id] !== undefined) {
-                const prev = previousRanks[p.id];
-                if (currentRank < prev) { // Improved (lower index is better)
-                    rankIcon = '<span class="rank-change rank-up">⬆️</span>';
-                } else if (currentRank > prev) {
-                    rankIcon = '<span class="rank-change rank-down">⬇️</span>';
-                }
-            }
-
-            const div = document.createElement('div');
-            div.className = 'leaderboard-item slide-in';
-            div.style.animationDelay = `${i * 0.1}s`;
-            const imgUrl = getAvatarUrl(p.trainerSpriteId);
-            
-            let barContent = '';
-            let scoreDisplay = p.score;
-            
-            if (config.mode === 'SURVIVAL') {
-                // Show Hearts
-                let hearts = '';
-                const lives = p.lives !== undefined ? p.lives : 0;
-                for(let h=0; h < lives; h++) hearts += '❤️';
-                
-                if (p.isEliminated) {
-                    hearts = '💀 K.O.';
-                    div.style.opacity = '0.6';
-                    div.style.filter = 'grayscale(100%)';
-                }
-                
-                scoreDisplay = hearts;
-                const lifePct = (lives / 4) * 100; 
-                const barColor = p.isEliminated ? '#555' : '#ff0000';
-                barContent = `<div class="leaderboard-bar" style="width: ${lifePct}%; background-color: ${barColor}"></div>`;
-            } else {
-                const barWidth = Math.max((p.score / maxScore) * 100, 5);
-                barContent = `<div class="leaderboard-bar" style="width: ${barWidth}%; background-color: ${p.color}"></div>`;
-            }
-            
-            div.innerHTML = `
-                <img src="${imgUrl}" class="leaderboard-avatar">
-                <div class="leaderboard-info">
-                    <span class="leaderboard-pseudo">${rankIcon} #${i+1} ${p.pseudo}</span>
-                    <span class="leaderboard-score-text">${scoreDisplay}</span>
-                </div>
-                <div class="leaderboard-bar-container">
-                    ${barContent}
-                </div>
-            `;
-            list.appendChild(div);
-        });
-        
-        // Update ranks
-        const newRanks = {};
-        players.forEach((p, i) => { newRanks[p.id] = i; });
-        previousRanks = newRanks;
-    }
-}
-
-function updateActivePlayers() {
-    const container = document.getElementById('active-players');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    allPlayers.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'mini-player-card';
-        if (config.mode === 'SURVIVAL' && p.isEliminated) {
-            div.classList.add('eliminated-mini');
-        }
-        
-        div.setAttribute('data-id', p.id);
-        const imgUrl = getAvatarUrl(p.trainerSpriteId);
-        
-        div.innerHTML = `
-            <img src="${imgUrl}">
-            <div class="status-indicator"></div>
-        `;
-        container.appendChild(div);
-    });
-}
-
-// --- Socket Events ---
-
-socket.on('connect', () => {
-    console.log('Connecté au serveur');
-});
-
-socket.on('server-info', (data) => {
-    const playerURL = data.url;
-    const qrEl = document.getElementById("qrcode");
-    if (qrEl) {
-        qrEl.innerHTML = "";
-        new QRCode(qrEl, {
-            text: playerURL,
-            width: 150,
-            height: 150,
-            colorDark: "#0f380f",
-            colorLight: "#9bbc0f",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-    }
-    const urlEl = document.getElementById("player-url");
-    if (urlEl) urlEl.textContent = playerURL;
-});
+// ... (existing code) ...
 
 // UI Handlers
 window.selectMode = function(mode) {
@@ -261,7 +134,7 @@ window.selectMode = function(mode) {
     const questionsVal = document.getElementById('questions-val');
     const questionsRange = document.getElementById('questions-range');
 
-    if (mode === 'MARATHON') {
+    if (mode === 'MARATHON' || mode === 'MARATHON_SHADOW') {
         questionsConfig.style.opacity = '0.5';
         questionsConfig.style.pointerEvents = 'none';
         if(questionsRange) questionsRange.disabled = true;
@@ -290,31 +163,17 @@ window.selectMode = function(mode) {
 };
 
 window.updateRangeVal = function(val) {
-    if (config.mode === 'MARATHON') return;
+    if (config.mode === 'MARATHON' || config.mode === 'MARATHON_SHADOW') return;
     config.limit = parseInt(val);
     document.getElementById('questions-val').textContent = `${val} QUESTIONS`;
 };
 
-window.updateLivesVal = function(val) {
-    config.lives = parseInt(val);
-    document.getElementById('lives-val').textContent = `❤️ ${val} VIES`;
-};
-
-function updateGenUI() {
-    document.querySelectorAll('.gen-btn').forEach(btn => {
-        const g = parseInt(btn.getAttribute('data-gen'));
-        if (config.generations.includes(g)) {
-            btn.classList.add('selected');
-        } else {
-            btn.classList.remove('selected');
-        }
-    });
-}
+// ... (existing code) ...
 
 window.toggleGen = function(gen) {
     gen = parseInt(gen);
     
-    if (config.mode === 'MARATHON') {
+    if (config.mode === 'MARATHON' || config.mode === 'MARATHON_SHADOW') {
         // Exclusive selection for Marathon
         config.generations = [gen];
     } else {
@@ -324,7 +183,8 @@ window.toggleGen = function(gen) {
             if (config.generations.length > 1) {
                 config.generations.splice(index, 1);
             }
-        } else {
+        }
+        else {
             config.generations.push(gen);
         }
     }

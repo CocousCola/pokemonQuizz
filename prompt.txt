@@ -1,9 +1,41 @@
-file:///opt/render/project/src/server/gameManager.js:85
-        let count = game.settings.limit || 12;
-            ^
-SyntaxError: Identifier 'count' has already been declared
-    at compileSourceTextModule (node:internal/modules/esm/utils:344:16)
-    at ModuleLoader.moduleStrategy (node:internal/modules/esm/translators:105:18)
-    at #translate (node:internal/modules/esm/loader:534:12)
-    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:581:27)
-Node.js v22.16.0
+Game created: 5793
+Player Cous joined game 5793
+Loading generations: 2...
+Loading generations: 2...
+Loading generations: 2...
+Loading generations: 2...
+Loading generations: 2...
+Loading generations: 2...
+Loaded Gen 2 (100 Pokemon).
+[DEBUG] Loaded Generations: 1, 2
+[DEBUG] Pool size for requested generations [1, 2]: 261 Pokémon.
+Error loading Gen 2: FetchError: request to https://pokeapi.co/api/v2/pokemon/219/ failed, reason: 
+    at ClientRequest.<anonymous> (file:///opt/render/project/src/node_modules/node-fetch/src/index.js:108:11)
+    at ClientRequest.emit (node:events:518:28)
+    at emitErrorEvent (node:_http_client:104:11)
+    at TLSSocket.socketErrorListener (node:_http_client:518:5)
+    at TLSSocket.emit (node:events:518:28)
+    at emitErrorNT (node:internal/streams/destroy:170:8)
+    at emitErrorCloseNT (node:internal/streams/destroy:129:3)
+    at processTicksAndRejections (node:internal/process/task_queues:90:21)
+    at runNextTicks (node:internal/process/task_queues:69:3)
+    at listOnTimeout (node:internal/timers:549:9) {
+  type: 'system',
+  errno: 'ETIMEDOUT',
+  code: 'ETIMEDOUT',
+  erroredSysCall: undefined
+}
+[DEBUG] Loaded Generations: 1, 2
+[DEBUG] Pool size for requested generations [1, 2]: 521 Pokémon.
+Loaded Gen 2 (100 Pokemon).
+[DEBUG] Loaded Generations: 1, 2
+[DEBUG] Pool size for requested generations [1, 2]: 681 Pokémon.
+Loaded Gen 2 (100 Pokemon).
+[DEBUG] Loaded Generations: 1, 2
+[DEBUG] Pool size for requested generations [1, 2]: 691 Pokémon.
+Loaded Gen 2 (100 Pokemon).
+[DEBUG] Loaded Generations: 1, 2
+[DEBUG] Pool size for requested generations [1, 2]: 701 Pokémon.
+Loaded Gen 2 (100 Pokemon).
+[DEBUG] Loaded Generations: 1, 2
+[DEBUG] Pool size for requested generations [1, 2]: 711 Pokémon.

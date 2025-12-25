@@ -201,7 +201,7 @@ class PokemonService {
             types = ['GUESS_CRY'];
         } else if (mode === 'POKEDEX') {
             types = ['DEX_NUMBER_QUIZ', 'WHO_IS_NUMBER', 'ORDER_CHRONO'];
-        } else if (mode === 'MARATHON') {
+        } else if (mode === 'MARATHON' || mode === 'MARATHON_SHADOW') {
             types = ['WHO_IS_THIS_TEXT'];
         } else {
             types = ['WHO_IS_THIS', 'GUESS_TYPE', 'EVOLUTION', 'STATS_BATTLE', 'DEX_NUMBER'];
@@ -218,7 +218,7 @@ class PokemonService {
     async createQuestion(type, index = 0, mode = 'CLASSIC', generations = [1]) {
         let mainPokemon;
         
-        if (mode === 'MARATHON') {
+        if (mode === 'MARATHON' || mode === 'MARATHON_SHADOW') {
             // Sequential Order for Marathon (based on filtered pool)
             mainPokemon = this.getPokemonByIndex(index, generations);
         } else {
@@ -253,12 +253,18 @@ class PokemonService {
         };
 
         // Marathon Specific Logic
-        if (mode === 'MARATHON') {
+        if (mode === 'MARATHON' || mode === 'MARATHON_SHADOW') {
             questionData.type = 'WHO_IS_THIS_TEXT';
             questionData.inputType = 'TEXT';
             questionData.answer = mainPokemon.nameFr;
             questionData.text = `Pokémon n°${mainPokemon.id}`;
-            questionData.progressiveReveal = true; 
+            
+            if (mode === 'MARATHON_SHADOW') {
+                questionData.forceShadow = true;
+                questionData.progressiveReveal = false;
+            } else {
+                questionData.progressiveReveal = true; 
+            }
             return questionData;
         }
 
